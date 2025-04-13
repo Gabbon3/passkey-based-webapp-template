@@ -1,0 +1,37 @@
+{
+    "name": "passkey-based-webapp-template",
+    "version": "1.0.0",
+    "description": "Template di una webapp che implementa autenticazione tramite OTP via mail e passkey, con access e refresh tokens",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "ts-node --esm src/server.ts",
+        "dev": "nodemon"
+    },
+    "author": "Gabriele Gherlone",
+    "license": "MIT",
+    "dependencies": {
+        "cookie-parser": "^1.4.7",
+        "dotenv": "^16.5.0",
+        "express": "^5.1.0",
+        "express-rate-limit": "^7.5.0",
+        "fido2-lib": "^3.5.3",
+        "jsonwebtoken": "^9.0.2",
+        "msgpack-lite": "^0.1.26",
+        "nodemailer": "^6.10.1",
+        "pg": "^8.14.1",
+        "save-dev": "^0.0.1-security",
+        "sequelize": "^6.37.7",
+        "uuid": "^11.1.0"
+    },
+    "devDependencies": {
+        "@types/cookie-parser": "^1.4.8",
+        "@types/express": "^5.0.1",
+        "@types/jsonwebtoken": "^9.0.9",
+        "@types/msgpack-lite": "^0.1.11",
+        "@types/node": "^22.14.1",
+        "@types/nodemailer": "^6.4.17",
+        "nodemon": "^3.1.9",
+        "typescript": "^5.8.3"
+    }
+}
