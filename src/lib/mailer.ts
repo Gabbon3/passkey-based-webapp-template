@@ -34,7 +34,7 @@ export class Mailer {
         to: string,
         subject: string,
         text: string,
-        html: string
+        html: string | null = null
     ): Promise<{ status: boolean; message?: string; error?: string }> {
         if (Config.DEV) {
             console.log(`\n\n ${subject} \n --- \n ${text} \n --- \n`);
