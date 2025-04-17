@@ -9,11 +9,12 @@ import { CError } from "../helpers/cError.js";
  * @param {NextFunction} next 
  * @returns 
  */
-export const errorHandlerMiddleware = async (error: CError | Error, req: Request, res: Response, next: NextFunction) => {
+export const errorHandlerMiddleware = (error: CError | Error, req: Request, res: Response, next: NextFunction): void => {
     if (error instanceof CError) {
-        return res.status(error.statusCode).json({ error: error.message });
+        res.status(error.statusCode).json({ error: error.message });
+    } else {
+        // -- errori generici
+        console.error(`\n-----\nERROR\n *** \n${error}\n-----\n`);
+        res.status(500).json({ error: "Internal Server Error" });
     }
-    // -- gestione di altri errori generici
-    console.error(`\n-----\nERROR\n *** \n${error}\n-----\n`);
-    return res.status(500).json({ error: "Internal Server Error" });
 };

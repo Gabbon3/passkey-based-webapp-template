@@ -1,23 +1,36 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../lib/db.js";
+// models/User.ts
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '../lib/db.js';
 import { v7 as uuidv7 } from 'uuid';
 
-export const User = sequelize.define(
-    "User",
-    {
-        id: {
-            type: DataTypes.UUID,
-            defaultValue: () => uuidv7(),
-            primaryKey: true,
-        },
-        email: { type: DataTypes.STRING, allowNull: false, unique: true },
-        verified: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+export class User extends Model {
+    declare id: string;
+    declare email: string;
+    declare verified: boolean;
+}
+
+User.init({
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: () => uuidv7(),
+        primaryKey: true,
     },
-    {
-        tableName: "user",
-        timestamps: true,
-        underscored: true,
-        charset: "utf8mb4",
-        collate: "utf8mb4_unicode_ci",
-    }
-);
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
+    verified: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    },
+}, {
+    sequelize,
+    modelName: "User",
+    tableName: "user",
+    timestamps: true,
+    underscored: true,
+    charset: "utf8mb4",
+    collate: "utf8mb4_unicode_ci",
+});

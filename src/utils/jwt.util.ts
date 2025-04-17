@@ -40,7 +40,7 @@ export class JWT {
      * @param key 
      * @returns restituisce null se non è valido oppure il payload
      */
-    static verify(token: string, key: JWTKeyName): string | JwtPayload | null {
+    static verify(token: string, key: JWTKeyName): any {
         try {
             // -- provo a verificare il jwt
             // - se invalido lancerà un errore quindi lo catturo

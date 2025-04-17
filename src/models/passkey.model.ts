@@ -1,8 +1,26 @@
-import { DataTypes } from "sequelize";
+import {
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    Model
+} from "sequelize";
 import { sequelize } from "../lib/db.js";
 import { v7 as uuidv7 } from 'uuid';
 
-export const Passkey = sequelize.define(
+export interface PasskeyInstance
+    extends Model<InferAttributes<PasskeyInstance>, InferCreationAttributes<PasskeyInstance>> {
+    id: string;
+    credentialId: string;
+    publicKey: string;
+    signCount: number;
+    name: string;
+    userId: string;
+    attestationFormat?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export const Passkey = sequelize.define<PasskeyInstance>(
     "Passkey",
     {
         id: {
@@ -10,18 +28,18 @@ export const Passkey = sequelize.define(
             defaultValue: () => uuidv7(),
             primaryKey: true
         },
-        credential_id: {
+        credentialId: {
             type: DataTypes.STRING,
             allowNull: false,
             unique: true,
             comment: "ID univoco della credenziale WebAuth"
         },
-        public_key: {
+        publicKey: {
             type: DataTypes.TEXT,
             allowNull: false,
             comment: "Chiave pubblica in binario per verificare le challenge"
         },
-        sign_count: {
+        signCount: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
@@ -33,11 +51,11 @@ export const Passkey = sequelize.define(
             defaultValue: "New passkey *",
             comment: "Nome della passkey",
         },
-        user_id: {
+        userId: {
             type: DataTypes.UUID,
             allowNull: false
         },
-        attestation_format: {
+        attestationFormat: {
             type: DataTypes.STRING(50),
             allowNull: true,
             comment: "Formato della attestation (es. packed, fido-u2f, ecc.)",
@@ -46,7 +64,7 @@ export const Passkey = sequelize.define(
     {
         tableName: "passkey",
         timestamps: true,
-        underscored: true,
+        underscored: true, // mantiene snake_case nel DB
         charset: "utf8mb4",
         collate: "utf8mb4_unicode_ci",
     }
