@@ -43,7 +43,7 @@ export class Mailer {
         const email = this.getHashEmailIdentity(email_, true, Config.FISH_SALT);
         let timestamp = Math.floor(Date.now() / 1000);
         // -- comprimo e riduco la dimensione dei dati
-        timestamp = BaseConverter.to_string(timestamp, 62);
+        timestamp = BaseConverter.toString(timestamp, 62);
         // ---
         const payload = `${email}.${timestamp}`;
         const signature = Cripto.hmac(payload, Config.FISH_KEY);
@@ -63,7 +63,7 @@ export class Mailer {
         // -- ottengo e decodifico la firma in binario (ultimo elemento)
         const encoded_signature = Bytes.base62.decode(code_parts[length - 1]);
         // -- ottengo il timestamp per fare il confronto temporale (penultimo elemento)
-        const timestamp = Number(BaseConverter.from_string(code_parts[length - 2], 62)) * 1000;
+        const timestamp = Number(BaseConverter.fromString(code_parts[length - 2], 62)) * 1000;
         // -- payload = user + timestamp ottenuto unendo il codice senza signature
         const payload = code_parts.slice(0, -1).join('.');
         // -- ottengo il mittente (unendo le parti del codice senza timestamp e signature) e derivo l'id dell'email fornita

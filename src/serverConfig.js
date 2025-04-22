@@ -17,6 +17,10 @@ export class Config {
     static EMAIL_USER = process.env.EMAIL_USER;
     static EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
 
+    // Anti phishing
+    static FISH_KEY = process.env.FISH_KEY;
+    static FISH_SALT = process.env.FISH_SALT;
+
     // Passkeys
     static ORIGIN = process.env.ORIGIN;
     static RPID = process.env.RPID;
