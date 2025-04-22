@@ -2,11 +2,11 @@ import { Sequelize } from 'sequelize';
 import { Config } from '../serverConfig.js';
 
 export const sequelize = new Sequelize(
-    Config.DB_NAME!,
-    Config.DB_USER!,
-    Config.DB_PASSWORD!,
+    Config.DB_NAME,
+    Config.DB_USER,
+    Config.DB_PASSWORD,
     {
-        host: Config.DB_HOST!,
+        host: Config.DB_HOST,
         dialect: 'postgres',
         dialectOptions: {
             useUTC: true,

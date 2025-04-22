@@ -3,7 +3,10 @@ import { sequelize } from './lib/db.js';
 import cookieParser from 'cookie-parser';
 import './models/associations.js';
 import { errorHandlerMiddleware } from './middlewares/errorHandler.middleware.js';
-// import { Config } from './serverConfig.js';
+// routes
+import authRoutes from './routes/auth.routes.js';
+import refreshTokenRoutes from './routes/refreshToken.routes.js';
+import passkeyRoutes from './routes/passkey.routes.js';
 
 /**
  * MIDDLEWARES
@@ -19,7 +22,12 @@ app.use(cookieParser());
 /**
  * ROUTES
  */
-
+app.use('/api/auth', authRoutes);
+app.use('/api/auth/refreshtoken', refreshTokenRoutes);
+app.use('/api/auth/passkey', passkeyRoutes);
+app.use('/api/health', (req, res) => {
+    res.status(200).json({ message: 'Im fine!' });
+});
 /**
  * Pubbliche
  */

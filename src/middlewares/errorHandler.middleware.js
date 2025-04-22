@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from "express";
 import { CError } from "../helpers/cError.js";
 
 /**
@@ -6,10 +5,9 @@ import { CError } from "../helpers/cError.js";
  * @param {CError | Error} error 
  * @param {Request} req 
  * @param {Response} res 
- * @param {NextFunction} next 
- * @returns 
+ * @param {Function} next
  */
-export const errorHandlerMiddleware = (error: CError | Error, req: Request, res: Response, next: NextFunction): void => {
+export const errorHandlerMiddleware = (error, req, res, next) => {
     if (error instanceof CError) {
         res.status(error.statusCode).json({ error: error.message });
     } else {

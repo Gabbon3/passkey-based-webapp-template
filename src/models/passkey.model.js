@@ -1,26 +1,8 @@
-import {
-    DataTypes,
-    InferAttributes,
-    InferCreationAttributes,
-    Model
-} from "sequelize";
-import { sequelize } from "../lib/db.js";
+import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from 'uuid';
+import { sequelize } from "../lib/db.js";
 
-export interface PasskeyInstance
-    extends Model<InferAttributes<PasskeyInstance>, InferCreationAttributes<PasskeyInstance>> {
-    id: string;
-    credentialId: string;
-    publicKey: string;
-    signCount: number;
-    name: string;
-    userId: string;
-    attestationFormat?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-}
-
-export const Passkey = sequelize.define<PasskeyInstance>(
+export const Passkey = sequelize.define(
     "Passkey",
     {
         id: {
@@ -28,18 +10,18 @@ export const Passkey = sequelize.define<PasskeyInstance>(
             defaultValue: () => uuidv7(),
             primaryKey: true
         },
-        credentialId: {
+        credential_id: {
             type: DataTypes.STRING,
             allowNull: false,
             unique: true,
             comment: "ID univoco della credenziale WebAuth"
         },
-        publicKey: {
+        public_key: {
             type: DataTypes.TEXT,
             allowNull: false,
             comment: "Chiave pubblica in binario per verificare le challenge"
         },
-        signCount: {
+        sign_count: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
@@ -51,11 +33,11 @@ export const Passkey = sequelize.define<PasskeyInstance>(
             defaultValue: "New passkey *",
             comment: "Nome della passkey",
         },
-        userId: {
+        user_id: {
             type: DataTypes.UUID,
             allowNull: false
         },
-        attestationFormat: {
+        attestation_format: {
             type: DataTypes.STRING(50),
             allowNull: true,
             comment: "Formato della attestation (es. packed, fido-u2f, ecc.)",
@@ -64,7 +46,7 @@ export const Passkey = sequelize.define<PasskeyInstance>(
     {
         tableName: "passkey",
         timestamps: true,
-        underscored: true, // mantiene snake_case nel DB
+        underscored: true,
         charset: "utf8mb4",
         collate: "utf8mb4_unicode_ci",
     }

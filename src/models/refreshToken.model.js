@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../lib/db.js";
 import { v7 as uuidv7 } from 'uuid';
+import { sequelize } from "../lib/db.js";
 
 export const RefreshToken = sequelize.define(
     "RefreshToken",

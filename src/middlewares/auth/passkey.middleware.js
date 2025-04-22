@@ -7,14 +7,6 @@ import { Passkey } from "../../models/passkey.model.js";
 import { fido2 } from "../../services/passkey.service.js";
 import { JWT } from "../../utils/jwt.util.js";
 import { Config } from "../../serverConfig.js";
-import { NextFunction } from "express";
-import { AuthenticatedRequest } from "../../interfaces/AuthenticatedRequest.js";
-
-interface PasskeyRequestBody {
-    bypass_token?: string,
-    request_id?: string,
-    auth_data?: string,
-}
 
 /**
  * Funzione che verifica la passkey, con la possibilità di rendere la verifica obbligatoria.
@@ -23,12 +15,12 @@ interface PasskeyRequestBody {
  * @param {boolean} required true per richiedere la verifica della passkey, false per bypassare con il token JWT
  * @returns {function} Middleware asincrono con gestione degli errori tramite asyncHandler
  */
-export const verifyPasskey = (required: boolean = false) => {
-    return asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const verifyPasskey = (required = false) => {
+    return asyncHandler(async (req, res, next) => {
         /**
          * Verifico se ce un bypass token
          */
-        const { bypass_token } = req.body as PasskeyRequestBody;
+        const { bypass_token } = req.body;
         if (bypass_token) {
             const payload = RamDB.get(`byp-${bypass_token}`);
             if (payload) {
@@ -40,7 +32,7 @@ export const verifyPasskey = (required: boolean = false) => {
             }
         }
 
-        const { request_id, auth_data } = req.body as PasskeyRequestBody;
+        const { request_id, auth_data } = req.body;
 
         /**
          * VERIFICA JWT PER BYPASS SUL CONTROLLO DELLA PASSKEY
@@ -89,7 +81,7 @@ export const verifyPasskey = (required: boolean = false) => {
                 },
                 {
                     challenge,
-                    origin: Config.ORIGIN as string,
+                    origin: Config.ORIGIN,
                     factor: "either",
                     publicKey: passkey.publicKey,
                     prevCounter: passkey.signCount,

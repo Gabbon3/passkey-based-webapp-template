@@ -5,8 +5,8 @@
     "main": "server.js",
     "type": "module",
     "scripts": {
-        "start": "ts-node --esm src/server.ts",
-        "dev": "nodemon"
+        "start": "node ./src/server.js",
+        "dev": "nodemon ./src/server.js"
     },
     "author": "Gabriele Gherlone",
     "license": "MIT",
@@ -22,15 +22,10 @@
         "pg": "^8.14.1",
         "save-dev": "^0.0.1-security",
         "sequelize": "^6.37.7",
+        "ua-parser-js": "^2.0.3",
         "uuid": "^11.1.0"
     },
     "devDependencies": {
-        "@types/cookie-parser": "^1.4.8",
-        "@types/express": "^5.0.1",
-        "@types/jsonwebtoken": "^9.0.9",
-        "@types/msgpack-lite": "^0.1.11",
-        "@types/node": "^22.14.1",
-        "@types/nodemailer": "^6.4.17",
         "nodemon": "^3.1.9",
         "typescript": "^5.8.3"
     }

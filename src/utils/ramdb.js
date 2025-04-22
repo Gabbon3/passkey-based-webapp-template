@@ -13,7 +13,7 @@ export class RamDB {
      * @param ttl - seconds - 0 > ttl => 145440
      * @returns true se è stato settato
      */
-    static set(key: string, value: any, ttl: number = 3600): boolean {
+    static set(key, value, ttl = 3600) {
         // -- verifico se il ttl è stato disposto correttamente
         if (ttl < 0 || ttl > this.max_ttl) return false;
         let encoded_value = null;
@@ -38,7 +38,7 @@ export class RamDB {
      * @param key
      * @returns true se esiste
      */
-    static has(key: string): boolean {
+    static has(key) {
         const exist = this.db.has(key);
         if (!exist) return false;
         // -- se esiste verifico che non sia scaduta
@@ -57,7 +57,7 @@ export class RamDB {
      * @param ttl default false
      * @returns null se non ha trovato nulla
      */
-    static get(key: string, ttl = false): any {
+    static get(key, ttl = false) {
         const exist = this.has(key);
         if (!exist) return null;
         // ---
@@ -77,7 +77,7 @@ export class RamDB {
      * @param updated_value 
      * @returns true se ha settato
      */
-    static update(key: string, updated_values: any): boolean {
+    static update(key, updated_values) {
         const record = this.get(key, true);
         if (!record) return false;
         // ---
@@ -100,7 +100,7 @@ export class RamDB {
      * @param key
      * @returns true se un elemento della mappa esisteva ed è stato rimosso, o false se l'elemento non esiste.
      */
-    static delete(key: string) {
+    static delete(key) {
         return this.db.delete(key);
     }
     /**

@@ -1,7 +1,5 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { Config } from "../serverConfig.js";
-
-type JWTKeyName = 'default' | 'passkey';
 
 export class JWT {
     // ---
@@ -11,10 +9,14 @@ export class JWT {
      */
     static keys = {
         default: Config.ACCESS_TOKEN_SECRET, // chiave per firmare i jwt base
-        passkey: Config.PASSKEY_TOKEN_SECRET, // chiave per firmare i jwt emessi da passkeys
     }
-    // -- proprietà dei jwt o cookie
-    static secure_option = true;
+
+    /**
+     * Tempi di scadenza dei token in secondi
+     */
+    static expires = {
+        accessToken: 15 * 60,
+    }
 
     /**
      * Crea un JWT generico
@@ -23,7 +25,7 @@ export class JWT {
      * @param key - nome della chiave da usare
      * @returns il jwt in formato stringa
      */
-    static create(payload: object, lifetime: number, key: JWTKeyName): string {
+    static create(payload, lifetime, key = 'default') {
         const now = Math.floor(Date.now() / 1000);
         // -- genero il JWT
         const token = jwt.sign({
@@ -40,7 +42,7 @@ export class JWT {
      * @param key 
      * @returns restituisce null se non è valido oppure il payload
      */
-    static verify(token: string, key: JWTKeyName): any {
+    static verify(token, key) {
         try {
             // -- provo a verificare il jwt
             // - se invalido lancerà un errore quindi lo catturo

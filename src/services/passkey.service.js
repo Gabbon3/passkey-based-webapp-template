@@ -2,11 +2,13 @@ import { CError } from "../helpers/cError.js";
 import { Passkey } from "../models/passkey.model.js";
 import { User } from "../models/user.model.js";
 import { Mailer } from "../lib/mailer.js";
+import automatedEmails from "../config/automatedMails.js";
 import { RamDB } from "../utils/ramdb.js";
-import { Fido2Lib } from "fido2-lib";
 import { Bytes } from "../utils/bytes.util.js";
+import { Config } from "../serverConfig.js";
+// ---
 import { v7 as uuidv7, parse as uuidParse } from 'uuid';
-import { Config } from "../serverConfig.js"; 
+import { Fido2Lib } from "fido2-lib";
 
 export const fido2 = new Fido2Lib({
     timeout: 60000,
@@ -16,50 +18,12 @@ export const fido2 = new Fido2Lib({
     attestation: 'direct'
 });
 
-interface RegistrationCredentials {
-    id: Uint8Array;
-    rawId: Uint8Array;
-    response: {
-        attestationObject: Uint8Array;
-        clientDataJSON: Uint8Array;
-    };
-}
-
-interface AuthOptions {
-    challenge: Uint8Array;
-    request_id: string;
-    credentials_id: string[] | null;
-}
-
-interface PasskeyRegistrationOptions {
-    user: {
-        id: Uint8Array,
-        name: string,
-        displayName: string
-    },
-    challenge: Uint8Array,
-    rp: {
-        name: string,
-        id: string | undefined,
-    },
-    authenticatorSelection: {
-        authenticatorAttachment: string,
-        requireResidentKey: boolean,
-        userVerification: string,
-    },
-    pubKeyCredParams: [
-        { type: string, alg: number },
-        { type: string, alg: number },
-    ]
-}
-
 export class PasskeyService {
     static rpName = "Vortex Vault";
     static rpId = Config.RPID;
-    static origin: string | undefined = Config.ORIGIN;
+    static origin = Config.ORIGIN;
     // ---
     constructor() {}
-
     /**
      * Genera le opzioni di registrazione per un utente.
      *
@@ -67,7 +31,7 @@ export class PasskeyService {
      * @returns {object} - Le opzioni di registrazione da inviare al client.
      * @throws {CError} - Se l'utente non viene trovato.
      */
-    async start_registration(email: string): Promise<any> {
+    async start_registration(email) {
         const user = await User.findOne({
             where: { email },
         });
@@ -75,7 +39,7 @@ export class PasskeyService {
         // -- l'account dell'utente deve essere verificato affinche possa essere attivata una nuova passkey
         if (!user.verified) throw new CError("", "You're not able to register any passkey to this account.", 403);
         // -- genero la challenge e le options
-        const options = await fido2.assertionOptions() as PasskeyRegistrationOptions;
+        const options = await fido2.assertionOptions();
         options.user = {
             id: uuidParse(user.id),
             name: user.email,
@@ -100,13 +64,12 @@ export class PasskeyService {
         // ---
         return options;
     }
-
     /**
      * Completa la registrazione di una passkey
      * @param {object} credentials
      * @returns {boolean}
      */
-    async complete_registration(credentials: RegistrationCredentials, email: string): Promise<boolean> {
+    async complete_registration(credentials, email) {
         const entry = RamDB.get(`psk-chl-${email}`);
         if (!entry) throw new CError("", "Request expired", 400);
         // -- valido i dati in ingresso
@@ -116,16 +79,16 @@ export class PasskeyService {
         // ---
         const { challenge, user_id } = entry;
         // -- verifico la challenge
-        let attestation: any = null;
+        let attestation = null;
         try {
             attestation = await fido2.attestationResult({
                 id: credentials.id,
                 rawId: credentials.rawId.buffer,
                 response: {
-                    attestationObject: credentials.response.attestationObject.buffer as any,
-                    clientDataJSON: credentials.response.clientDataJSON.buffer as any,
+                    attestationObject: credentials.response.attestationObject.buffer,
+                    clientDataJSON: credentials.response.clientDataJSON.buffer,
                 },
-            }, { challenge: challenge, origin: PasskeyService.origin as string, factor: "either", });
+            }, { challenge: challenge, origin: PasskeyService.origin, factor: "either", });
         } catch (error) {
             // console.warn(error);
             throw new CError("AttestationFailed", "Passkey verification failed.", 400);
@@ -148,27 +111,26 @@ export class PasskeyService {
             attestation_format,
         });
         // -- invio la mail
-        // const { text, html } = automated_mails.newPasskeyAdded(email);
-        // Mailer.send(email, "New Passkey", text, html);
+        const { text, html } = automatedEmails.newPasskeyAdded(email);
+        Mailer.send(email, "New Passkey", text, html);
         RamDB.delete(`psk-chl-${email}`);
         // ---
         return true;
     }
-
     /**
      * Genera le opzioni di autenticazione per l'utente.
      * @param {string} uid - l'id dell'utente, per restituire le credenziali associate
      * @returns {object} - Le opzioni di autenticazione da inviare al client.
      */
-    async generateAuthOptions(uid?: string): Promise<AuthOptions> {
-        let credentials_id: string[] | null = null;
+    async generate_auth_options(uid) {
+        let credentials_id = null;
         // -- se è stato passato lo user id recupero le passkey associate
         if (uid) {
-            const credentials = await Passkey.findAll({
+            credentials_id = await Passkey.findAll({
                 where: { user_id: uid },
                 attributes: ['credential_id']
             });
-            credentials_id = credentials.map((cred: any) => cred.credential_id);
+            credentials_id = credentials_id.map((cred) => cred.credential_id);
         }
         const request_id = uuidv7();
         // -- creo una challenge unica
@@ -179,42 +141,39 @@ export class PasskeyService {
         // -- invio la challenge e la request id
         return { challenge, request_id, credentials_id };
     }
-
     /**
      * Restituisce la lista di tutte le passkeys
      * @param {number} uid 
      */
-    async list(uid: number) {
+    async list(uid) {
         return await Passkey.findAll({ 
             where: { user_id: uid },
             attributes: ['id', 'name', 'created_at', 'updated_at']
         });
     }
-
     /**
      * Aggiorna un qualunque campo della passkey
      * @param {string} id
      * @param {Object} updated_info un oggetto con le informazioni da modificare
      * @returns {Array} [affectedCount]
      */
-    async update(id: string, updated_info: Record<string, any>): Promise<[number]> {
+    async update(id, updated_info) {
         return await Passkey.update(
             updated_info,
             { where: { id } }
         );
     }
-
     /**
      * Elimina una passkey
      * @param {BigInt} id 
      * @param {number} uid 
      */
-    async delete(id: bigint, uid: number): Promise<number> {
+    async delete(id, uid) {
         return await Passkey.destroy({
             where: {
                 user_id: uid,
                 id: id
             }
-        });
+        })
     }
 }

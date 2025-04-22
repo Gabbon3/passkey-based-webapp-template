@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from 'express';
 import { Roles } from "../../config/roles.js";
 import { JWT } from "../../utils/jwt.util.js";
 import { asyncHandler } from '../asyncHandler.middleware.js';
@@ -8,22 +7,11 @@ import { Mailer } from '../../lib/mailer.js';
 import { Cripto } from '../../utils/cripto.util.js';
 
 /**
- * Estendo Request, per aggiungere la proprietà 'user'
- */
-declare global {
-    namespace Express {
-        interface Request {
-            user?: any
-        }
-    }
-}
-
-/**
  * Middleware per la verifica del jwt e refresh 
  * dell'access token se scaduto
- * @param requiredRole
+ * @param {number} requiredRole
  */
-export const verifyAccessToken = (requiredRole: number = Roles.BASE) => (req: Request, res: Response, next: NextFunction) => {
+export const verifyAccessToken = (requiredRole = Roles.BASE) => (req, res, next) => {
     const accessToken = req.cookies.access_token;
     // -- verifico che esista
     if (!accessToken) {
@@ -51,15 +39,15 @@ export const verifyAccessToken = (requiredRole: number = Roles.BASE) => (req: Re
 /**
  * Verifica il codice inviato per email.
  */
-export const verifyEmailCode = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const { request_id: requestId, code }: { request_id: string; code: string } = req.body;
+export const verifyEmailCode = asyncHandler(async (req, res, next) => {
+    const { request_id: requestId, code } = req.body;
     const record = RamDB.get(requestId);
     // -- se il codice è scaduto
     if (!record) {
         throw new CError("TimeoutError", "Request expired", 404);
     }
     // -- recupero i dati
-    const [saltedHash, attempts, email]: [Uint8Array | false, number, string] = record;
+    const [saltedHash, attempts, email] = record;
     // -- verifico il numero di tentativi
     if (attempts >= 3) {
         await Mailer.send(email, "OTP Failed Attempt", 'Maximum attempts achieved on OTP verification via another device');
@@ -78,9 +66,9 @@ export const verifyEmailCode = asyncHandler(async (req: Request, res: Response, 
         throw new CError("AuthError", "Invalid code", 403);
     }
     // memorizzo l'utente che ha fatto la richiesta
-    (req as any).user = { email };
+    req.user = { email };
     // -- elimino la richiesta dal db
-    // RamDB.delete(request_id); // Decommenta se vuoi eliminare la richiesta
+    RamDB.delete(requestId);
     // -- se il codice è valido, passo al prossimo middleware
     next();
 });

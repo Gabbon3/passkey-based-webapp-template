@@ -1,4 +1,4 @@
-export class DateUtils {
+export class date {
     /**
      * Restituisce una stringa che rappresenta la data e l'ora formattate secondo un dato schema.
      *
@@ -46,8 +46,8 @@ export class DateUtils {
      * @example
      * date.format('Y-m-d H:i:s'); // "2024-10-07 14:30:45"
      */
-    static format(format: string, date: Date = new Date()): string {
-        const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+    static format(format, date = new Date()) {
+        const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
         const map = {
             // Anno
             Y: date.getFullYear(),
@@ -76,13 +76,13 @@ export class DateUtils {
                 ];
             })(),
             z: Math.floor(
-                (date.getTime() - new Date(date.getFullYear(), 0, 0).getTime() / 86400000)
+                (date - new Date(date.getFullYear(), 0, 0)) / 86400000
             ),
 
             // Settimana
             W: (() => {
                 const first_day_of_year = new Date(date.getFullYear(), 0, 1);
-                const days = Math.floor((date.getTime() - first_day_of_year.getTime()) / 86400000);
+                const days = Math.floor((date - first_day_of_year) / 86400000);
                 return String(
                     Math.ceil((days + first_day_of_year.getDay() + 1) / 7)
                 ).padStart(2, "0");
@@ -101,8 +101,6 @@ export class DateUtils {
             s: String(date.getSeconds()).padStart(2, "0"),
         };
         // ---
-        return format.replace(/%(\w)/g, (match: string, p1: string) =>
-            p1 in map ? String(map[p1 as keyof typeof map]) : match
-        );
+        return format.replace(/%(\w)/g, (match, p1) => map[p1] !== undefined ? map[p1] : match);
     }
 }
