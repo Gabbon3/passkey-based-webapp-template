@@ -16,8 +16,7 @@ const limiter = rateLimit({
 });
 router.use(limiter);
 /**
- * Queste routes si trovano sotto:
- * auth/refreshtoken
+ * auth/refreshtoken/*
  */
 // -- le routes con i controller associati
 router.post('/refresh', verifyPasskey(), controller.generateAccessToken);

@@ -17,7 +17,6 @@ const limiter = rateLimit({
 });
 router.use(limiter);
 /**
- * Queste routes seguono questo percorso:
  * auth/passkey/*
  */
 // -- START REGISTRATION

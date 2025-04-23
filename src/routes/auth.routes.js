@@ -17,8 +17,7 @@ const limiter = rateLimit({
 });
 router.use(limiter);
 /**
- * Queste routes stanno sotto:
- * /auth
+ * /auth/*
  */
 // -- AUTH ROUTES (USER)
 router.post('/signup', verifyEmailCode, controller.signup);
@@ -32,12 +31,11 @@ router.post('/otp-test', verifyEmailCode, controller.testEmailOtp);
 router.post('/verify-account', verifyEmailCode, controller.verifyAccount);
 // -- SIGN-OUT
 router.post('/signout', verifyAccessToken(), controller.signout);
-router.post('/clear-cookies', controller.clearCookies);
 // -- DELETE
 router.post('/delete', verifyPasskey(true), controller.delete);
 // -- MESSAGE AUTHENTICATION CODE VERIFICATION
-router.post('/vmac', controller.verifyMessageAuthenticationCode);
+router.post('/verify-mac', controller.verifyMessageAuthenticationCode);
 // -- (DEV) restituisce un message autentication code
-router.get('/vmac/:email', controller.createMessageAuthenticationCode);
+router.post('/mac', controller.createMessageAuthenticationCode);
 
 export default router;

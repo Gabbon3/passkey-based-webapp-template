@@ -230,12 +230,13 @@ export class AuthController {
      * Verifica la validità di un message authentication code
      */
     verifyMessageAuthenticationCode = asyncHandler(async (req, res) => {
-        const { email, mac } = req.body; // mac = message_authentication_code
+        const { email, token } = req.body; // mac = message_authentication_code
         // -- verifico che ci siano i dati
         if (!email)
             throw new CError("", "No email passed for verification", 422);
         // ---
-        const status = Mailer.verifyMessageAuthenticationCode(email, mac);
+        const status = Mailer.verifyMessageAuthenticationCode(email, token);
+        status.info = "1 codice e data validi, 2 codice valido ma scaduto, 3 codice non valido, 4 ricevente diverso da quello indicato";
         res.status(200).json(status);
     });
     /**
@@ -244,7 +245,7 @@ export class AuthController {
     createMessageAuthenticationCode = asyncHandler(async (req, res) => {
         if (!Config.DEV) throw new CError('', 'Access denied.', 403);
         // ---
-        const { email } = req.params;
+        const { email } = req.body;
         if (!email) throw new CError('', 'Access denied.', 400);
         // ---
         const mac = Mailer.messageAuthenticationCode(email);
