@@ -7,6 +7,7 @@ import { errorHandlerMiddleware } from './middlewares/errorHandler.middleware.js
 import authRoutes from './routes/auth.routes.js';
 import refreshTokenRoutes from './routes/refreshToken.routes.js';
 import passkeyRoutes from './routes/passkey.routes.js';
+import staticRoutes from './routes/static.routes.js';
 
 /**
  * MIDDLEWARES
@@ -31,7 +32,7 @@ app.use('/api/health', (req, res) => {
 /**
  * Pubbliche
  */
-// app.use('/', static_routes);
+app.use('/', staticRoutes);
 
 /**
  * Middlewares per gli errori
