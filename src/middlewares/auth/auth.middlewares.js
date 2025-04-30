@@ -5,6 +5,7 @@ import { RamDB } from '../../utils/ramdb.js';
 import { CError } from '../../helpers/cError.js';
 import { Mailer } from '../../lib/mailer.js';
 import { Cripto } from '../../utils/cripto.util.js';
+import { SecureLayer } from "../../utils/secureLayer.util.js";
 
 /**
  * Middleware per la verifica del jwt e refresh 
@@ -32,6 +33,46 @@ export const verifyAccessToken = (requiredRole = Roles.BASE) => (req, res, next)
     if (req.user.role < requiredRole) {
         return res.status(403).json({ error: "Insufficient privileges" });
     }
+    // -- passo al prossimo middleware o controller
+    next();
+}
+
+/**
+ * Middleware per la verifica del jwt e refresh 
+ * dell'access token se scaduto
+ * @param {number} requiredRole
+ */
+export const verifyAccessTokenSuper = (requiredRole = Roles.BASE) => (req, res, next) => {
+    const accessToken = req.cookies.access_token;
+    // -- verifico che esista
+    if (!accessToken) {
+        return res.status(401).json({ error: "Access denied" });
+    }
+    // -- verifico che l'access token sia valido
+    const payload = JWT.verify(accessToken, 'default');
+    if (!payload) {
+        return res.status(401).json({ error: "Access denied" });
+    }
+    // -- se è tutto ok aggiungo il payload dell'utente alla request
+    req.user = payload;
+    // -- verifica se il payload è conforme
+    if (!req.user.uid) {
+        return res.status(400).json({ error: "Sign-in again" });
+    }
+    // -- verifica del ruolo
+    if (req.user.role < requiredRole) {
+        return res.status(403).json({ error: "Insufficient privileges" });
+    }
+    /**
+     * Verifico l'integrità della richiesta
+     */
+    const integrity = req.get('X-Integrity');
+    if (!integrity) return res.status(403).json({ error: "Integrity not found" });
+    // -- verifico l'integrity
+    const { kid } = payload;
+    const verified = SecureLayer.verifyIntegrity(kid, integrity);
+    if (!verified) return res.status(403).json({ error: "Integrity failed" });
+    // ----
     // -- passo al prossimo middleware o controller
     next();
 }

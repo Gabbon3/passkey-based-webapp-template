@@ -44,7 +44,7 @@ export class API {
                     return null;
             }
             // -- aggiungo l'header integrity se presente
-            const integrity = SecureLayer.getIntegrity();
+            const integrity = await SecureLayer.getIntegrity();
             if (integrity) {
                 options.headers['X-Integrity'] = integrity;
             }
@@ -107,4 +107,4 @@ export class API {
     }
 }
 
-// window.API = API;
+window.API = API;

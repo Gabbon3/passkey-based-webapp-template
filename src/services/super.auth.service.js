@@ -1,14 +1,11 @@
 import { Op } from 'sequelize';
 import { JWT } from "../utils/jwt.util.js";
 import { CError } from "../helpers/cError.js";
-import { Cripto } from "../utils/cripto.util.js";
 import { User } from "../models/user.model.js";
 import { Roles } from "../config/roles.js";
 import { Mailer } from "../lib/mailer.js";
 import automatedEmails from "../config/automatedMails.js";
-import { RamDB } from "../utils/ramdb.js";
-import { v4 as uuidv4 } from 'uuid';
-import { ECDH } from '../lib/ecdh.node.js';
+import { SecureLayer } from '../utils/secureLayer.util.js';
 
 export class SuperAuthService {
     /**
@@ -62,21 +59,12 @@ export class SuperAuthService {
         });
         if (!user) throw new CError("AuthenticationError", "Invalid email", 401);
         if (user.verified !== true) throw new CError("AuthenticationError", "Email is not verified", 401);
-        // -- genero un guid per la chiave ecdh
-        const kid = uuidv4(); // kid = key id
-        // -- genero la coppia e derivo il segreto
-        const clientPublicKey = Buffer.from(publicKeyHex, "hex");
-        const keyPair = ECDH.generateKeys();
-        const sharedSecret = ECDH.deriveSharedSecret(
-            keyPair.private_key,
-            clientPublicKey
-        );
-        // -- salvo in Ram
-        RamDB.set(kid, [sharedSecret, 0], 3600);
+        // ---
+        const { kid, keyPair } = await SecureLayer.calculateSharedSecret(publicKeyHex);
         /**
          * Genero l'access token
          */
-        const accessToken = JWT.create({ uid: user.id, role: Roles.BASE, kid });
+        const accessToken = JWT.create({ uid: user.id, role: Roles.BASE, kid }, 3600);
         /**
          * restituisco quindi:
          *  - l'access token

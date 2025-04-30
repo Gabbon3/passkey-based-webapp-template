@@ -34,4 +34,4 @@ export class SessionStorage {
     }
 }
 
-// window.SessionStorage = SessionStorage;
+window.SessionStorage = SessionStorage;

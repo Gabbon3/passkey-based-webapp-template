@@ -20,8 +20,7 @@ router.use(limiter);
  * auth/passkey/*
  */
 // -- START REGISTRATION
-router.post('/register-e', verifyEmailCode, controller.startRegistration);
-router.post('/register-a', verifyAccessToken(Roles.SUDO), controller.startRegistration);
+router.post('/register', verifyEmailCode, controller.startRegistration);
 // -- COMPLETE REGISTRATION
 router.post('/register', controller.completeRegistration);
 router.get('/', controller.getAuthOptions);

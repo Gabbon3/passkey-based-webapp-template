@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign-up</title>
+    <!-- Favicon generico -->
+    <link rel="icon" href="./img/favicon.ico" type="image/x-icon">
+    <!-- Icona per Android -->
+    <link rel="icon" sizes="192x192" href="./img/android-chrome-192x192.png">
+    <link rel="icon" sizes="512x512" href="./img/android-chrome-512x512.png">
+    <!-- Apple Touch Icon (per dispositivi iOS) -->
+    <link rel="apple-touch-icon" href="./img/apple-touch-icon.png">
+    <!-- Favicon per diverse dimensioni (16x16, 32x32) -->
+    <link rel="icon" type="image/png" sizes="16x16" href="./img/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./img/favicon-32x32.png">
+    <!-- Manifesto del sito web (per miglior supporto su Android e PWA) -->
+    <link rel="manifest" href="./img/site.webmanifest">
+    <!-- END ICO -->
+    <!-- stile -->
+    <link rel="stylesheet" href="./css/main.css">
+    <!-- components -->
+    <script type="module" src="./components/common.components.js"></script>
+    <script type="module" src="./components/auth.components.js"></script>
+    <!-- auth -->
+    <script type="module" src="./ui/signup.ui.js"></script>
+</head>
+<body class="theme-earth">
+    <app-navbar></app-navbar>
+    <main class="pagina">
+        <form id="signup">
+            <h2 class="icon">
+                <img src="./img/vortex_vault_logo.png" class="logo">
+                Sign-up
+            </h2>
+            <!-- --- -->
+            <div class="isle bg-3">
+                <label for="email">
+                    <span class="material-symbols-rounded">person</span>
+                    Email
+                </label>
+                <input type="email" value="gabriele.gherlone@gmail.com" class="input-text mb-2" id="email" name="email" autocomplete="off" required>
+                <!-- --- -->
+                <email-verify-btn email-id="email" target-id="signin-otp"></email-verify-btn>
+                <!-- --- -->
+                <mfa-input input-id="signin-otp"></mfa-input>
+                <button type="submit" class="btn primary w-100 mt-2">
+                    <span class="material-symbols-rounded">person_add</span>
+                    Sign-up
+                </button>
+            </div>
+        </form>
+    </main>
+    <!--
+    SETTINGS
+    -->
+    <app-tools 
+        revert="true"
+        app-theme="true"
+        message-authentication-code="true">
+    </app-tools>
+    <!-- FOOTER -->
+    <app-footer></app-footer>
+</body>
+</html>

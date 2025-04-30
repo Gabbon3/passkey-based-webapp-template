@@ -12,7 +12,7 @@ export const errorHandlerMiddleware = (error, req, res, next) => {
         res.status(error.statusCode).json({ error: error.message });
     } else {
         // -- errori generici
-        console.error(`\n-----\nERROR\n *** \n${error}\n-----\n`);
+        console.error(`\n-----\nERROR\n *** \n${error}\n${error.stack}\n-----\n`);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };

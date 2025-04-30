@@ -19,17 +19,17 @@ export class SecureLayer {
      * da associare alle fetch come header
      * @returns {string} stringa esadecimale dell'integrità
      */
-    static getIntegrity() {
+    static async getIntegrity() {
         // -- ottengo la chiave dal session storage
         const key = SessionStorage.get('key');
-        const counter = SessionStorage.get('counter');
+        const counter = Number(SessionStorage.get('counter'));
         // ---
-        if (!key || !counter) return null;
+        if (key instanceof Uint8Array == false || !counter) return null;
         // -- ottengo la chiave nuova
-        const newKey = this.updateKey(key, counter);
+        const newKey = await this.updateKey(key, counter);
         // -- genero la challenge
         const challenge = Cripto.random_bytes(12);
-        const encrypted = AES256GCM.encrypt(challenge, newKey);
+        const encrypted = await AES256GCM.encrypt(challenge, newKey);
         return Bytes.hex.encode(encrypted);
     }
     /**
@@ -38,12 +38,12 @@ export class SecureLayer {
      * @param {BigInt} counter 
      * @returns {Uint8Array}
      */
-    static updateKey(key, counter) {
+    static async updateKey(key, counter) {
         this.recentKey = key;
         // ---
         counter++;
-        const counterBytes = Bytes.bigint.decode(counter);
-        const newKey = Cripto.hash(Bytes.merge([key, counterBytes], 8));
+        const counterBytes = Bytes.bigint.decode(BigInt(counter));
+        const newKey = await Cripto.hash(Bytes.merge([key, counterBytes], 8));
         // -- salvo il nuovo counter e la nuova chiave
         SessionStorage.set('key', newKey);
         SessionStorage.set('counter', counter);
@@ -55,7 +55,7 @@ export class SecureLayer {
      * @returns {boolean}
      */
     static async generateKeyPair() {
-        const keyPair = await ECDH.generate_keys();
+        const keyPair = await ECDH.generateKeys();
         // ---
         this.clientPrivateKey = keyPair.private_key[0];
         // -
@@ -83,10 +83,10 @@ export class SecureLayer {
     /**
      * Calcola il counter basandosi sulla chiave
      * @param {Uint8Array} [key=this.key] 
-     * @returns {BigInt}
+     * @returns {number}
      */
     static calculateCounter(key = this.key) {
-        return BigInt(key[0] ^ key[17] ^ key[31]);
+        return key[0] ^ key[17] ^ key[31];
     }
 
     /**
@@ -102,7 +102,7 @@ export class SecureLayer {
         this.counter = this.calculateCounter();
         // -- setto localmente
         SessionStorage.set('key', this.key);
-        SessionStorage.set('counter', this.counter);
+        SessionStorage.set('counter', Number(this.counter));
         // ---
         return true;
     }

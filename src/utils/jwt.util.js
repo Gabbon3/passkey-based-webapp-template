@@ -22,7 +22,7 @@ export class JWT {
      * Crea un JWT generico
      * @param payload
      * @param lifetime - tempo di scadenza del jwt in secondi
-     * @param key - nome della chiave da usare
+     * @param key - nome della chiave da usare per firmare questo jwt
      * @returns il jwt in formato stringa
      */
     static create(payload, lifetime, key = 'default') {

@@ -8,7 +8,7 @@ export class ECDH {
      * @param {string} [curve='P-256'] di default quella piu comune ma puo anche essere 'P-384' o 'P-521'
      * @returns {Promise<{public_key: [CryptoKey, Uint8Array], private_key: [CryptoKey, Uint8Array]}>} La chiave pubblica in formato Uint8Array e la chiave privata in formato CryptoKey.
      */
-    static async generate_keys(curve = 'P-256') {
+    static async generateKeys(curve = 'P-256') {
         // -- genero la coppia di chiavi ECDH usando la curva P-256
         const key_pair = await window.crypto.subtle.generateKey(
             {
@@ -34,7 +34,7 @@ export class ECDH {
      * @param {string} [curve='P-256'] 
      * @returns {Promise<CryptoKey>} La chiave pubblica importata come CryptoKey.
      */
-    static async import_public_key(public_key, curve = 'P-256') {
+    static async importPublicKey(public_key, curve = 'P-256') {
         // -- importo la chiave pubblica ricevuta in formato SPKI
         return await window.crypto.subtle.importKey(
             "raw", // - formato della chiave
@@ -54,7 +54,7 @@ export class ECDH {
      * @param {string} [curve='P-256'] 
      * @returns {Promise<CryptoKey>} La chiave privata importata come CryptoKey.
      */
-    static async import_private_key(private_key_bytes, curve = 'P-256') {
+    static async importPrivateKey(private_key_bytes, curve = 'P-256') {
         return window.crypto.subtle.importKey(
             "pkcs8", // - il formato
             private_key_bytes, // - chiave privata come Uint8Array
@@ -73,7 +73,7 @@ export class ECDH {
      * @param {CryptoKey} public_key - La chiave pubblica in formato CryptoKey.
      * @returns {Promise<Uint8Array>} La chiave condivisa derivata come Uint8Array.
      */
-    static async derive_shared_secret(private_key, public_key) {
+    static async deriveSharedSecret(private_key, public_key) {
         // -- derivo la chiave condivisa utilizzando la chiave privata e la chiave pubblica
         const shared_secret = await window.crypto.subtle.deriveBits(
             {
