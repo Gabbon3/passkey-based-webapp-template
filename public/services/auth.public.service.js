@@ -13,7 +13,7 @@ export class AuthService {
         // -- genero la coppia di chiavi
         await SecureLayer.generateKeyPair();
         // -- invio la richiesta
-        const res = await API.fetch('/auths/signin', {
+        const res = await API.fetch('/api/auths/signin', {
             request_id,
             code,
             email,

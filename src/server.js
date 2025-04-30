@@ -5,9 +5,10 @@ import './models/associations.js';
 import { errorHandlerMiddleware } from './middlewares/errorHandler.middleware.js';
 // routes
 import authRoutes from './routes/auth.routes.js';
-import refreshTokenRoutes from './routes/refreshToken.routes.js';
 import passkeyRoutes from './routes/passkey.routes.js';
 import staticRoutes from './routes/static.routes.js';
+// super
+import superAuthRoutes from './routes/super.auth.routes.js';
 
 /**
  * MIDDLEWARES
@@ -24,11 +25,14 @@ app.use(cookieParser());
  * ROUTES
  */
 app.use('/api/auth', authRoutes);
-app.use('/api/auth/refreshtoken', refreshTokenRoutes);
 app.use('/api/auth/passkey', passkeyRoutes);
 app.use('/api/health', (req, res) => {
     res.status(200).json({ message: 'Im fine!' });
 });
+/**
+ * SUPER
+ */
+app.use('/api/auths', superAuthRoutes);
 /**
  * Pubbliche
  */

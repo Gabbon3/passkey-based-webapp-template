@@ -1,0 +1,64 @@
+// Ocean Pastel Theme 🌊✨
+// Principali
+$c1: #A8C5DA; // Blu polvere
+$c2: #AEE5D8; // Verde acqua pastello
+$c3: #F3D5B5; // Sabbia calda
+// Colori
+$c-danger: #E8A39B; // Corallo spento
+$c-red: #F7B6A3; // Rosa pesca
+$c-warning: #F4CFA0; // Ocra chiaro
+$c-blue: #A8C5DA; // Blu pastello
+$c-lightblue: #D0E7F2; // Azzurro ghiaccio
+$c-yellow: #ebd895; // Giallo crema
+$c-orange: #EFB797; // Arancione pesca
+$c-peach: #FFD6B5; // Pesca pastello
+$c-purple: #D3B4FF; // Lavanda chiaro
+$c-pink: #FFB7C5; // Rosa tenue
+$c-mint: #BFE2C5; // Verde menta
+$c-lightgray: #EAEAEA; // Grigio chiaro neutro
+$c-olive-green: #C4D7A1; // Verde oliva chiaro
+$c-green: #5ADEA8; // Verde acqua brillante
+// Sfondo (gradienti e toni marini)
+$bg-1: #11151b;
+$bg-2: lighten($bg-1, 3);
+$bg-3: lighten($bg-1, 6);
+$bg-4: lighten($bg-1, 9);
+$bg-5: lighten($bg-1, 12);
+$bg-6: lighten($bg-1, 15);
+$bg-7: lighten($bg-1, 18);
+// Specifici
+$border-color: lighten($bg-1, 40);
+$message-bc: #465461;
+// Variabili CSS
+.theme-ocean {
+    // Principali
+    --c1: #{$c1};
+    --c2: #{$c2};
+    --c3: #{$c3};
+    // Colori
+    --danger: #{$c-danger};
+    --red: #{$c-red};
+    --warning: #{$c-warning};
+    --blue: #{$c-blue};
+    --lightblue: #{$c-lightblue};
+    --yellow: #{$c-yellow};
+    --orange: #{$c-orange};
+    --peach: #{$c-peach};
+    --purple: #{$c-purple};
+    --pink: #{$c-pink};
+    --mint: #{$c-mint};
+    --lightgray: #{$c-lightgray};
+    --green: #{$c-green};
+    --olivegreen: #{$c-olive-green};
+    // Sfondo
+    --bg-1: #{$bg-1};
+    --bg-2: #{$bg-2};
+    --bg-3: #{$bg-3};
+    --bg-4: #{$bg-4};
+    --bg-5: #{$bg-5};
+    --bg-6: #{$bg-6};
+    --bg-7: #{$bg-7};
+    // Specifici
+    --border-color: #{$border-color};
+    --message-bc: #{$message-bc};
+}

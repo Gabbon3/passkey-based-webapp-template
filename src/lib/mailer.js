@@ -99,10 +99,10 @@ export class Mailer {
      * );
      */
     static async send(to, subject, text, html) {
-        // if (Config.DEV) {
-        //     console.log(`\n\n ${subject} \n --- \n ${text} \n --- \n`);
-        //     return true;
-        // }
+        if (Config.DEV) {
+            console.log(`\n\n ${subject} \n --- \n ${text} \n --- \n`);
+            return true;
+        }
         try {
             const mail_options = {
                 from: Config.EMAIL_USER,

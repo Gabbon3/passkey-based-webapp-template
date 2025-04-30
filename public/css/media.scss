@@ -1,0 +1,42 @@
+@media screen and (max-width: 730px) {
+    .pagina {
+        margin-top: 0;
+        margin-bottom: 70px;
+    }
+
+    vortex-navbar {
+        position: fixed;
+        top: unset;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        border-radius: 0;
+        flex-wrap: nowrap;
+
+        a {
+            justify-content: center;
+            flex-grow: 1;
+            font-size: $fs-l;
+
+            i {
+                display: none;
+            }
+        }
+
+        .last {
+            margin-left: unset;
+        }
+
+        .logo {
+            display: none;
+        }
+    }
+
+    .btn .text {
+        display: none;
+    }
+
+    #logs_container {
+        bottom: 60px;
+    }
+}

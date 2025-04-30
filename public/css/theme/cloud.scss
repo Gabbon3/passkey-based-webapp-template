@@ -1,0 +1,70 @@
+// Cloud ☁️
+// Sky Theme ☁️ (Versione con maggiore contrasto)
+// Principali
+$c1: #1E3A5F;
+$c2: #345C85; 
+$c3: #4F769D;
+// Colori (Più scuri per maggiore contrasto)
+$c-danger: #D43F52;   // Rosso intenso
+$c-red: #C7434D;      // Rosso scuro
+$c-warning: #D98E00;  // Giallo-arancio scuro
+$c-blue: #2C5E96;     // Blu più scuro per contrasto
+$c-lightblue: #4A87C2; // Azzurro più profondo
+$c-yellow: #CC8800;   // Giallo ocra scuro
+$c-orange: #B85C2F;   // Arancione bruciato
+$c-peach: #D48055;    // Pesca scuro
+$c-purple: #7747A6;   // Viola profondo
+$c-pink: #B24C7B;     // Rosa scuro
+$c-mint: #4D8B74;     // Verde acqua scuro
+$c-lightgray: #B0B0B0; // Grigio intermedio per dettagli
+$c-olive-green: #5D7440; // Verde oliva scuro
+$c-green: #56933d;
+// Sfondo (Chiarissimo con sfumature di blu-grigio)
+$bg-1: #f3f5f6; // Quasi bianco con leggero azzurro
+$bg-2: darken($bg-1, 4);
+$bg-3: darken($bg-1, 8);
+$bg-4: darken($bg-1, 12);
+$bg-5: darken($bg-1, 16);
+$bg-6: darken($bg-1, 20);
+$bg-7: darken($bg-1, 24);
+
+// Specifici
+$border-color: darken($bg-1, 30);
+$message-bc: #a3afbd;
+.theme-cloud {
+    // Principali
+    --c1: #{$c1};
+    --c2: #{$c2};
+    --c3: #{$c3};
+    // Colori
+    --danger: #{$c-danger};
+    --red: #{$c-red};
+    --warning: #{$c-warning};
+    --blue: #{$c-blue};
+    --lightblue: #{$c-lightblue};
+    --yellow: #{$c-yellow};
+    --orange: #{$c-orange};
+    --peach: #{$c-peach};
+    --purple: #{$c-purple};
+    --pink: #{$c-pink};
+    --mint: #{$c-mint};
+    --lightgray: #{$c-lightgray};
+    --green: #{$c-green};
+    --olivegreen: #{$c-olive-green};
+    // Sfondo
+    --bg-1: #{$bg-1};
+    --bg-2: #{$bg-2};
+    --bg-3: #{$bg-3};
+    --bg-4: #{$bg-4};
+    --bg-5: #{$bg-5};
+    --bg-6: #{$bg-6};
+    --bg-7: #{$bg-7};
+    // Specifici
+    --border-color: #{$border-color};
+    --message-bc: #{$message-bc};
+    // Testo
+    --text-color: #111;
+    --text-color-15: #333;
+    --text-color-2: #666;
+    --text-color-21: #555;
+}

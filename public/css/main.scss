@@ -1,0 +1,73 @@
+/*
+cd public/css
+sass --watch main.scss:main.css
+*/
+
+/*
+font e icone
+*/
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0");
+
+:root {
+    --text-color: #f5f5f5;
+    --text-color-15: #ddd;
+    --text-color-2: #888;
+    --text-color-21: #555;
+}
+
+// Scuri
+@import "./theme/variables.scss";
+@import "./theme/earth.scss";
+@import "./theme/monokai.scss";
+@import "./theme/dracula.scss";
+@import "./theme/tokyonight.scss";
+@import "./theme/cyberpunk.scss";
+@import "./theme/ocean.scss";
+@import "./theme/blossom.scss";
+@import "./theme/coffee.scss";
+// Chiari
+@import "./theme/cloud.scss";
+
+$color-names: "red", "yellow", "green", "orange", "peach", "purple", "pink", "mint", "blue", "lightblue", "lightgray", "olivegreen";
+
+* {
+    box-sizing: border-box;
+    font-family: $font-family;
+}
+
+html {
+    padding: 0;
+    border: 0;
+    scroll-behavior: smooth;
+}
+
+body {
+    padding: 0;
+    border: 0;
+    background-color: var(--bg-1);
+    color: var(--text-color);
+    font-family: $font-family !important;
+}
+
+.pagina {
+    display: block;
+    margin: 0 auto;
+    margin-bottom: 25px;
+    margin-top: 75px;
+    max-width: 700px;
+    width: 98%;
+}
+
+.material-symbols-rounded {
+    font-size: 1.3em;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+@import "comuni.scss";
+@import "id.scss";
+@import "animazioni.scss";
+@import "media.scss";

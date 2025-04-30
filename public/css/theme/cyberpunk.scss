@@ -1,0 +1,67 @@
+// Cyberpunk 2077 Theme 🚀
+// Principali
+$c1: #FFEE58;  // Giallo neon per il testo principale
+$c2: #00E0E0;  // Ciano neon per elementi secondari
+$c3: #FF007F;  // Rosa acceso per accenti forti
+
+// Colori (Toni neon con forte contrasto)
+$c-danger: #FF3131;   // Rosso vivo per errori
+$c-red: #FF0055;      // Rosso neon intenso
+$c-warning: #FF5E00;  // Giallo acido per alert
+$c-blue: #00FFFF;     // Blu elettrico per info
+$c-lightblue: #00BFFF; // Azzurro neon brillante
+$c-yellow: #FFD700;   // Giallo oro cyber
+$c-orange: #FF8800;   // Arancione caldo neon
+$c-peach: #FFAE70;    // Pesca luminoso
+$c-purple: #b054e8;   // Viola neon per elementi extra
+$c-pink: #FF00FF;     // Magenta shock
+$c-mint: #00FF99;     // Verde neon
+$c-lightgray: #808080; // Grigio medio per dettagli
+$c-olive-green: #739900; // Verde oliva acido
+$c-green: #00ff00;
+
+// Sfondo (Molto scuro con riflessi freddi)
+$bg-1: #0D0D0D; // Quasi nero puro
+$bg-2: lighten($bg-1, 3);
+$bg-3: lighten($bg-1, 6);
+$bg-4: lighten($bg-1, 9);
+$bg-5: lighten($bg-1, 12);
+$bg-6: lighten($bg-1, 15);
+$bg-7: lighten($bg-1, 18);
+
+// Specifici
+$border-color: lighten($bg-1, 24);
+$message-bc: #615b2e;
+// Variabili CSS
+.theme-cyberpunk {
+    // Principali
+    --c1: #{$c1};
+    --c2: #{$c2};
+    --c3: #{$c3};
+    // Colori
+    --danger: #{$c-danger};
+    --red: #{$c-red};
+    --warning: #{$c-warning};
+    --blue: #{$c-blue};
+    --lightblue: #{$c-lightblue};
+    --yellow: #{$c-yellow};
+    --orange: #{$c-orange};
+    --peach: #{$c-peach};
+    --purple: #{$c-purple};
+    --pink: #{$c-pink};
+    --mint: #{$c-mint};
+    --lightgray: #{$c-lightgray};
+    --green: #{$c-green};
+    --olivegreen: #{$c-olive-green};
+    // Sfondo
+    --bg-1: #{$bg-1};
+    --bg-2: #{$bg-2};
+    --bg-3: #{$bg-3};
+    --bg-4: #{$bg-4};
+    --bg-5: #{$bg-5};
+    --bg-6: #{$bg-6};
+    --bg-7: #{$bg-7};
+    // Specifici
+    --border-color: #{$border-color};
+    --message-bc: #{$message-bc};
+}

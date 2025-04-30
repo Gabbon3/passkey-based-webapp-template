@@ -6,7 +6,6 @@ export class Windows {
      * 
      */
     static init() {
-        return;
         this.bc = document.getElementById('modal-backdrop');
         this.bc.addEventListener('click', () => {
             Windows.close();
@@ -54,5 +53,4 @@ export class Windows {
     }
 }
 
-document.addEventListener('DOMContentLoaded', Windows.init());
 // window.Windows = Windows;

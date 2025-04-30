@@ -1,0 +1,886 @@
+.title-icon,
+label,
+.label {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+label,
+.label {
+    .material-symbols-rounded {
+        color: var(--c1);
+    }
+
+    margin: 7px 0 7px 0;
+
+    input.input-text {
+        margin: 0;
+        padding: 3px;
+        background-color: transparent;
+    }
+}
+
+.flex {
+    display: flex !important;
+
+    @mixin flex-grow($value) {
+        flex-grow: $value;
+    }
+
+    @for $i from 1 through 10 {
+        .fg-#{$i} {
+            @include flex-grow($i);
+        }
+    }
+
+    @mixin gap($value) {
+        gap: #{calc($value / 10)}px !important;
+    }
+
+    $i: 25;
+
+    @while $i < 300 {
+        &.gap-#{$i} {
+            @include gap($i);
+        }
+
+        $i: $i + 25;
+    }
+
+    &.d-row {
+        flex-direction: row;
+    }
+
+    &.d-column {
+        flex-direction: column;
+    }
+
+    &.x-right {
+        justify-content: right;
+    }
+
+    &.y-center {
+        align-items: center;
+    }
+
+    &.x-center {
+        justify-content: center;
+    }
+
+    &.stretch {
+        justify-content: stretch;
+    }
+
+    &.wrap {
+        flex-wrap: wrap;
+
+        &.reverse {
+            flex-wrap: wrap-reverse;
+        }
+
+        &.no {
+            flex-wrap: nowrap;
+        }
+    }
+
+    .last {
+        margin-left: auto;
+    }
+}
+
+.work-break-all {
+    word-break: break-all;
+}
+
+$spacers: (
+    0: 0px,
+    1: 0.25rem,
+    2: 0.5rem,
+    3: 0.75rem,
+    4: 1rem,
+    5: 1.25rem,
+    6: 1.5rem,
+);
+
+@each $key, $value in $spacers {
+    .m-#{$key} {
+        margin: $value !important;
+    }
+
+    .mt-#{$key} {
+        margin-top: $value !important;
+    }
+
+    .mr-#{$key} {
+        margin-right: $value !important;
+    }
+
+    .mb-#{$key} {
+        margin-bottom: $value !important;
+    }
+
+    .ml-#{$key} {
+        margin-left: $value !important;
+    }
+
+    .mx-#{$key} {
+        margin-left: $value !important;
+        margin-right: $value !important;
+    }
+
+    .my-#{$key} {
+        margin-top: $value !important;
+        margin-bottom: $value !important;
+    }
+}
+
+@each $key, $value in $spacers {
+    .p-#{$key} {
+        padding: $value !important;
+    }
+
+    .pt-#{$key} {
+        padding-top: $value !important;
+    }
+
+    .pr-#{$key} {
+        padding-right: $value !important;
+    }
+
+    .pb-#{$key} {
+        padding-bottom: $value !important;
+    }
+
+    .pl-#{$key} {
+        padding-left: $value !important;
+    }
+
+    .px-#{$key} {
+        padding-left: $value !important;
+        padding-right: $value !important;
+    }
+
+    .py-#{$key} {
+        padding-top: $value !important;
+        padding-bottom: $value !important;
+    }
+}
+// margin e padding top e bottom = 0
+.mpy-0 {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.none {
+    display: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0.5em 0 0.3em 0;
+
+    &.icon {
+        .material-symbols-rounded {
+            color: var(--c1);
+
+            &.warning {
+                color: var(--warning) !important;
+            }
+
+            &.danger {
+                color: var(--danger) !important;
+            }
+        }
+    }
+
+    &.unbold {
+        font-weight: normal;
+    }
+
+    .logo {
+        width: 36px;
+        margin: 5px;
+    }
+
+    &.code {
+        font-family: $monospace;
+        justify-content: center;
+        letter-spacing: 10px;
+        color: var(--c1);
+    }
+}
+
+.color {
+    &.warn {
+        color: var(--warning) !important;
+    }
+
+    &.danger {
+        color: var(--danger) !important;
+    }
+
+    &.primary {
+        color: var(--c1) !important;
+    }
+
+    &.purple {
+        color: var(--purple) !important;
+    }
+}
+
+p {
+    font-size: $fs-m;
+    color: var(--text-color);
+    margin: 0.5em auto;
+    line-height: 1.5;
+
+    a {
+        color: var(--c2);
+        text-decoration: none;
+        border-bottom: 1px dashed var(--c2);
+        cursor: pointer;
+
+        &:hover {
+            border-bottom: 1px solid var(--c2);
+        }
+    }
+
+    b {
+        color: var(--c1);
+        font-weight: normal;
+    }
+
+    &.center {
+        text-align: center;
+    }
+
+    &.secondary {
+        color: var(--text-color-2);
+    }
+
+    &.description {
+        color: var(--text-color-2);
+        font-size: $fs-s;
+    }
+}
+
+colored {
+    color: var(--c1);
+}
+
+.fs-l {
+    font-size: $fs-l;
+}
+
+.slider {
+    cursor: pointer;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+hr {
+    margin: 0.8rem 0;
+    color: var(--border-color);
+    border: 0;
+    border-top: 1px solid var(--border-color);
+
+    &.dashed {
+        background-color: transparent;
+        border-bottom: 1px dashed var(--border-color);
+    }
+
+    &.s {
+        width: 90%;
+    }
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    justify-content: center;
+    padding: 8px 10px;
+    border-radius: $br-m;
+    border: none;
+    transition: 0.2s;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: $fs-m;
+    font-weight: normal !important;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+
+    &.gap-0 {
+        gap: 0;
+    }
+
+    &.primary {
+        background-color: color-mix(in srgb, var(--c1), transparent 85%);
+        color: var(--c1);
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--c1), transparent 80%);
+        }
+    }
+
+    &.secondary {
+        background-color: var(--bg-5);
+        color: var(--text-color-15);
+
+        &:hover {
+            background-color: var(--bg-6);
+            color: var(--text-color);
+        }
+    }
+
+    &.warning {
+        background-color: color-mix(in srgb, var(--warning), transparent 80%);
+        color: var(--warning);
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--warning), transparent 70%);
+        }
+    }
+
+    &.danger {
+        background-color: color-mix(in srgb, var(--danger), transparent 80%);
+        color: var(--danger);
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--danger), transparent 70%);
+        }
+    }
+
+    @mixin button-color-styles($color-name) {
+        &.#{$color-name} {
+            background-color: color-mix(in srgb, var(--#{$color-name}), transparent 80%);
+            color: var(--#{$color-name});
+
+            &:hover {
+                background-color: color-mix(in srgb, var(--#{$color-name}), transparent 70%);
+            }
+        }
+    }
+
+    @each $color-name in $color-names {
+        @include button-color-styles($color-name);
+    }
+
+    &.t {
+        background-color: transparent;
+        color: var(--text-color-2);
+
+        &:hover {
+            box-shadow: 0 0 0 4px var(--bg-5);
+            color: var(--text-color);
+        }
+
+        &:active {
+            box-shadow: 0 0 0 6px var(--bg-5);
+        }
+    }
+
+    &.s {
+        font-size: $fs-s;
+        padding: 4px 7px;
+    }
+
+    &.l {
+        font-size: $fs-l;
+    }
+
+    &.xl {
+        font-size: $fs-xl;
+    }
+
+    &.close.last {
+        padding: 3px;
+    }
+}
+
+.window {
+    position: fixed;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    padding: 10px;
+    border-radius: $br-l;
+    max-height: calc(100% - 20px);
+    max-width: 950px;
+    width: calc(100% - 20px);
+    min-height: 100px;
+    overflow-y: scroll;
+    z-index: 10;
+    background-color: var(--bg-3);
+    transition: all 200ms cubic-bezier(1, 0, 1, 1);
+    opacity: 0;
+
+    // posizione iniziale top
+    &.pt {
+        top: 0;
+    }
+
+    // posizione iniziale sinistra
+    &.pl {
+        top: 50%;
+        left: 0;
+    }
+
+    // posizione iniziale destra
+    &.pr {
+        top: 50%;
+        left: 100%;
+    }
+
+    &.show {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        transition: all 200ms cubic-bezier(0, 0, 0, 1);
+        opacity: 1;
+    }
+
+    &.auto {
+        overflow: hidden !important;
+        width: auto;
+        height: auto;
+    }
+
+    // small
+    &.s {
+        max-width: 400px;
+    }
+
+    &.m {
+        max-width: 500px;
+    }
+}
+
+.maincolor {
+    /*
+    COLORI PRINCIPALI
+    */
+    @mixin color-styles($color-name) {
+        &.#{$color-name} {
+            h1,
+            h2,
+            h3,
+            h4 {
+                .material-symbols-rounded {
+                    color: var(--#{$color-name});
+                }
+            }
+
+            p {
+                colored {
+                    color: var(--#{$color-name});
+                }
+            }
+
+            label .material-symbols-rounded {
+                color: var(--#{$color-name});
+            }
+
+            .input-text {
+                &:hover {
+                    box-shadow: 0 0 0 1px color-mix(in srgb, var(--#{$color-name}), transparent 80%);
+                }
+
+                &:focus {
+                    box-shadow: 0 0 0 4px color-mix(in srgb, var(--#{$color-name}), transparent 80%);
+                }
+            }
+
+            input[type="range"] {
+                background-color: var(--#{$color-name});
+
+                &::-webkit-slider-thumb {
+                    border-color: var(--#{$color-name});
+                }
+            }
+
+            .container-input-text {
+                &:has(textarea:hover) {
+                    box-shadow: 0 0 0 1px color-mix(in srgb, var(--#{$color-name}), transparent 80%);
+                }
+
+                &:has(textarea:focus) {
+                    box-shadow: 0 0 0 4px color-mix(in srgb, var(--#{$color-name}), transparent 80%);
+                }
+            }
+
+            .btn.primary {
+                color: var(--#{$color-name}) !important;
+                background-color: color-mix(in srgb, var(--#{$color-name}), transparent 80%);
+
+                &:hover {
+                    background-color: color-mix(in srgb, var(--#{$color-name}), transparent 70%);
+                }
+            }
+
+            .input-switch input:checked + label {
+                background-color: color-mix(in srgb, var(--#{$color-name}), transparent 50%);
+            }
+        }
+    }
+
+    // Generiamo le classi in automatico per tutti i colori
+    @each $color-name in $color-names {
+        @include color-styles($color-name);
+    }
+}
+
+.isle {
+    padding: $br-m;
+    border-radius: $br-m;
+
+    // LARGHEZZA
+    &.s {
+        max-width: 400px;
+    }
+
+    &.m {
+        max-width: 500px;
+    }
+
+    &.l {
+        max-width: 600px;
+    }
+
+    // BACKGROUND COLOR
+    &.bg-1 {
+        background-color: var(--bg-1);
+    }
+
+    &.bg-2 {
+        background-color: var(--bg-2);
+    }
+
+    &.bg-3 {
+        background-color: var(--bg-3);
+    }
+
+    &.bg-4 {
+        background-color: var(--bg-4);
+    }
+
+    &.bg-5 {
+        background-color: var(--bg-5);
+    }
+
+    &.bg-6 {
+        background-color: var(--bg-6);
+    }
+
+    &.bg-7 {
+        background-color: var(--bg-7);
+    }
+    // BORDER RADIUS
+    &.br-m {
+        border-radius: $br-m;
+    }
+
+    &.br-l {
+        border-radius: $br-l;
+    }
+
+    &.br-xl {
+        border-radius: $br-xl;
+    }
+}
+
+.alert {
+    padding: $br-m;
+    border-radius: $br-m;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-direction: row;
+    // ---
+    .icon {
+        font-size: $fs-xxl;
+        margin-left: 2px;
+    }
+    p {
+        margin: 0;
+    }
+    // ---
+    &.danger {
+        background-color: color-mix(in srgb, var(--red), transparent 90%);
+        color: var(--red) !important;
+        p {
+            color: var(--red);
+        }
+    }
+    &.warning {
+        background-color: color-mix(in srgb, var(--warning), transparent 90%);
+        color: var(--warning) !important;
+        p {
+            color: var(--warning);
+        }
+    }
+    &.success {
+        background-color: color-mix(in srgb, var(--olivegreen), transparent 90%);
+        color: var(--olivegreen) !important;
+        p {
+            color: var(--olivegreen);
+        }
+    }
+}
+
+// transform
+.trans {
+    &.rotate {
+        &._90 {
+            transform: rotate(90deg);
+        }
+
+        &._180 {
+            transform: rotate(180deg);
+        }
+    }
+}
+
+monospace,
+.monospace {
+    font-family: $monospace;
+}
+
+.mfa {
+    font-family: $monospace;
+    letter-spacing: 5px;
+    font-weight: normal;
+}
+
+input[type="password"] {
+    font-family: $monospace !important;
+}
+
+.formatted-env {
+    display: flex;
+    gap: 5px;
+    flex-direction: column;
+    
+    span {
+        transition: 0.05s;
+        font-family: $monospace !important;
+        word-wrap: break-word;
+        padding: 3px;
+        border-radius: 3px;
+        cursor: pointer;
+        
+        &:hover {
+            background-color: var(--bg-3);
+        }
+    }
+
+    .env-key {
+        color: var(--yellow);
+    }
+
+    .env-value {
+        color: var(--olivegreen);
+    }
+}
+
+.input-text,
+.container-input-text {
+    display: block;
+    margin: 0 auto;
+    padding: $br-m;
+    border-radius: $br-m;
+    transition: 0.2s;
+    outline: none;
+    background-color: var(--bg-1);
+    border: none;
+    color: var(--text-color);
+    width: 100%;
+    font-size: $fs-m;
+    resize: none;
+
+    &.color {
+        margin: 0;
+        width: 40px;
+        height: 40px;
+        padding: 4px;
+    }
+
+    &.fs-l {
+        font-size: $fs-l;
+    }
+    // no border
+    &.nb {
+        border-radius: 0;
+    }
+
+    &.uppercase {
+        text-transform: uppercase;
+    }
+
+    &:read-only {
+        cursor: default;
+    }
+
+    &[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+        color: var(--text-color-2);
+    }
+
+    &.mfa {
+        letter-spacing: 0.5em;
+        text-align: center;
+        font-family: $monospace;
+    }
+
+    &.bg-2 {
+        background-color: var(--bg-3);
+    }
+
+    &.mono {
+        font-family: $monospace;
+    }
+}
+
+.container-input-text {
+    padding: 0;
+    overflow: hidden;
+
+    textarea {
+        display: block;
+        border: none;
+        outline: none;
+        border-radius: 0;
+        background-color: transparent;
+        color: var(--text-color);
+        font-size: $fs-m;
+        width: 100%;
+        margin: 0;
+        padding: $br-m;
+        resize: none;
+    }
+
+    &:has(textarea:hover) {
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--c1), transparent 80%);
+    }
+
+    &:has(textarea:focus) {
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--c1), transparent 80%);
+    }
+}
+
+.input-text {
+    &:hover {
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--c1), transparent 80%);
+    }
+    &:focus {
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--c1), transparent 80%);
+    }
+}
+
+.input-switch {
+    display: inline-block;
+    position: relative;
+    // -- coefficente per gestire facilmente la dimensione
+    $k: 0.6;
+
+    label {
+        display: block;
+        width: ($k * 4em);
+        height: ($k * 2em);
+        background-color: var(--border-color);
+        border-radius: ($k * 1.5em);
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s ease;
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: ($k * 0.25em);
+            left: ($k * 0.25em);
+            width: ($k * 1.5em);
+            height: ($k * 1.5em);
+            background-color: var(--text-color);
+            border-radius: 50%;
+            transition: left 0.2s ease;
+        }
+    }
+
+    input {
+        display: none;
+    }
+
+    input:checked + label {
+        background-color: color-mix(in srgb, var(--c1), transparent 50%);
+    }
+
+    input:checked + label::before {
+        left: ($k * 2.25em); // 1.75em = 32px
+    }
+}
+
+input[type="range"] {
+    appearance: none;
+    width: 95%;
+    height: 0.2rem;
+    outline: none;
+    border-radius: 0.2rem;
+    display: block;
+    margin: 15px auto;
+    background-color: var(--c1);
+
+    &::-webkit-slider-thumb {
+        appearance: none;
+        width: 1.25rem;
+        height: 1.25rem;
+        background-color: var(--c1);
+        border: 0.2rem solid var(--c1);
+        background-color: var(--text-color);
+        border-radius: 1.25rem;
+        cursor: pointer;
+    }
+}
+
+.slider {
+    margin: 0;
+    cursor: pointer;
+}
+
+.slider-cont {
+    margin-top: 0.5rem;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease, opacity 0.3s ease;
+
+    &.fast {
+        transition-duration: 0.25s;
+    }
+
+    &.slow {
+        transition-duration: 0.35s;
+    }
+
+    &.slower {
+        transition-duration: 0.4s;
+    }
+
+    &.slider-open {
+        opacity: 1;
+    }
+}

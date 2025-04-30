@@ -1,0 +1,312 @@
+app-navbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .last {
+        margin-left: auto;
+    }
+
+    a {
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--text-color);
+        text-decoration: none;
+        border-radius: $br-s;
+        transition: 0.1s;
+        cursor: pointer;
+
+        @mixin navbar-color-styles($color-name) {
+            &.#{$color-name} {
+                span {
+                    color: var(--#{$color-name});
+                }
+                &:hover {
+                    background-color: color-mix(
+                        in srgb,
+                        var(--#{$color-name}),
+                        transparent 90%
+                    );
+                }
+            }
+        }
+        @each $color-name in $color-names {
+            @include navbar-color-styles($color-name);
+        }
+
+        i {
+            font-style: normal;
+        }
+
+        span {
+            color: var(--c1);
+        }
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--c1), transparent 90%);
+        }
+    }
+}
+
+app-navbar {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    border-radius: $br-m;
+    background-color: var(--bg-3);
+    box-shadow: 0 0 0 1px var(--bg-5);
+    position: fixed;
+    top: 7px;
+    left: 7px;
+    width: calc(100% - 14px);
+    z-index: 5;
+
+    .logo {
+        height: 30px;
+        padding: 0 10px;
+        margin-left: auto;
+    }
+}
+
+#signin,
+#signup {
+    display: block;
+    margin: 20px auto;
+    background-color: var(--bg-2);
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 500px;
+}
+
+#logs_container {
+    position: fixed;
+    bottom: 5px;
+    left: 5px;
+    display: flex;
+    gap: 5px;
+    z-index: 2050;
+    max-width: 350px;
+    flex-wrap: wrap;
+
+    log-info {
+        position: relative;
+        padding: 6px 8px;
+        padding-right: 20px;
+        padding-bottom: 10px;
+        border-radius: $br-xl;
+        overflow: hidden;
+        --bc-log: var(--bg-1);
+        --i-color: var(--text-color);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        animation: bounce 500ms linear both;
+        cursor: pointer;
+
+        .log-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 200px;
+            max-width: 350px;
+        }
+
+        &.chiudi {
+            animation: bounce-out 500ms linear both;
+        }
+
+        p {
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        &._0 {
+            background-color: color-mix(
+                in srgb,
+                var(--olivegreen),
+                transparent 70%
+            );
+            // border: 1px solid var(--c1);
+            color: var(--olivegreen);
+            &::after {
+                background-color: var(--olivegreen);
+            }
+        }
+        &._1 {
+            background-color: color-mix(
+                in srgb,
+                var(--warning),
+                transparent 70%
+            );
+            // border: 1px solid var(--warning);
+            color: var(--orange);
+            &::after {
+                background-color: var(--orange);
+            }
+        }
+        &._2 {
+            background-color: color-mix(
+                in srgb,
+                var(--danger),
+                transparent 70%
+            );
+            // border: 1px solid var(--red);
+            color: var(--red);
+            &::after {
+                background-color: var(--red);
+            }
+        }
+        &._3 {
+            background-color: color-mix(in srgb, var(--lightblue), transparent 70%);
+            // border: 1px solid var(--mint);
+            color: var(--lightblue);
+            &::after {
+                background-color: var(--lightblue);
+            }
+        }
+
+        .i-container {
+            height: 100%;
+            display: flex;
+            align-items: center;
+
+            i,
+            .material-symbols-rounded {
+                font-size: calc($fs-m + 8px);
+                padding: 8px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                aspect-ratio: 1 / 1;
+            }
+        }
+
+        &::after,
+        &::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            width: 0;
+        }
+
+        &::after {
+            width: 100%;
+            border-radius: 0 5px 0 0;
+            animation: log_bar 8s linear 0s 1;
+        }
+
+        &::before {
+            width: 100%;
+        }
+    }
+}
+
+#passkey-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+passkey-list-item {
+    display: flex;
+    flex-direction: column;
+    gap: $br-m;
+    padding: $br-m;
+    border-radius: $br-m;
+    background-color: var(--bg-4);
+
+    .token-id {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        color: var(--text-color-2);
+        font-size: $fs-s;
+
+        i {
+            font-family: $monospace !important;
+            font-style: normal !important;
+        }
+    }
+
+    &.current {
+        .token-id {
+            color: var(--purple);
+        }
+    }
+
+    .info {
+        display: flex;
+        flex-direction: row;
+        gap: 7px;
+    }
+}
+
+#qrcode-2fa-secret,
+#qrcode-fsi {
+    display: block;
+    margin: 0 auto;
+    height: 0;
+}
+
+#loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    width: 100%;
+    height: 100%;
+    background-color: color-mix(in srgb, var(--bg-1), transparent 50%);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+
+    .full {
+        width: 100%;
+        height: 100%;
+    }
+
+    &.show {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+#loader {
+    svg {
+        width: calc((15vw + 15vh) / 2);
+        animation: ease-out loader infinite 2s;
+    }
+    .material-symbols-rounded {
+        font-size: calc((12vw + 12vh) / 2);
+        animation: linear spin infinite 0.5s;
+    }
+}
+
+#modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: color-mix(in srgb, var(--bg-1), transparent 30%);
+    z-index: 9;
+    // ---
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+
+    &.show {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+mfa-input {
+    display: block;
+}
