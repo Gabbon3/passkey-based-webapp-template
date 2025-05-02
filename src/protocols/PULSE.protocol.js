@@ -5,6 +5,7 @@ import { Bytes } from "../utils/bytes.util.js";
 import { Cripto } from "../utils/cripto.util.js";
 import { AES256GCM } from "../utils/aesgcm.js";
 import { AuthKeys } from "../models/authKeys.model.js";
+import { Config } from "../serverConfig.js";
 
 /**
  * PULSE = Parallel Unlinkable Long-lived Session Exchange
@@ -35,18 +36,28 @@ export class PULSE {
         }
         return false; // tutte le finestre fallite
     }
+    
+    /**
+     * Calcola il key id per memorizzare in maniera offuscata lo shared secret sul db
+     * @param {string} guid identificativo segreto condiviso
+     * @returns {string} stringa esadecimale 32 byte
+     */
+    static calculateKid(guid) {
+        return Cripto.hmac(guid, Config.PULSEPEPPER, { output_encoding: 'hex' });
+    }
 
     /**
      * Ottiene una auth key, prima prova dalla ram, poi dal db, se no null
-     * @param {string} kid 
+     * @param {string} guid 
      * @returns {Uint8Array}
      */
-    static async getAuthKey(kid) {
+    static async getAuthKey(guid) {
         try {
             // -- RAM
-            const fromRam = RamDB.get(kid);
+            const fromRam = RamDB.get(guid);
             if (fromRam) return fromRam;
             // -- DB
+            const kid = this.calculateKid(guid);
             const fromDB = await AuthKeys.findByPk(kid);
             if (fromDB) {
                 // -- aggiorna last_seen_at
@@ -55,7 +66,7 @@ export class PULSE {
                 // ---
                 const secret = Bytes.hex.decode(fromDB.secret);
                 // -- salvo in ram
-                RamDB.set(kid, secret, PULSE.ramTimeout);
+                RamDB.set(guid, secret, PULSE.ramTimeout);
                 // ---
                 return secret;
             }
@@ -68,12 +79,14 @@ export class PULSE {
 
     /**
      * Salva sul db la il segreto condiviso
-     * @param {string} kid 
+     * @param {string} guid 
      * @param {string} sharedKey 
      * @param {string} uid user id
      * @returns 
      */
-    static async saveAuthKey(kid, sharedKey, uid) {
+    static async saveAuthKey(guid, sharedKey, uid) {
+        const kid = this.calculateKid(guid);
+        // ---
         const authKey = new AuthKeys({
             kid: kid,
             secret: Bytes.hex.encode(sharedKey),

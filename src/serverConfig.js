@@ -5,7 +5,7 @@ export class Config {
     static PORT = process.env.PORT;
 
     // JWT
-    static ACCESS_TOKEN_SECRET = Buffer.from(process.env.ACCESS_TOKEN_SECRET ?? '', 'hex');
+    static ACCESS_TOKEN_SECRET = Buffer.from(process.env.ACCESS_TOKEN_SECRET, 'hex');
 
     // Database
     static DB_HOST = process.env.DB_HOST;
@@ -24,6 +24,9 @@ export class Config {
     // Passkeys
     static ORIGIN = process.env.ORIGIN;
     static RPID = process.env.RPID;
+
+    // PULSE
+    static PULSEPEPPER = Buffer.from(process.env.PULSEPEPPER, 'hex');
 
     // Dev
     static DEV = process.env.DEV === 'true';
