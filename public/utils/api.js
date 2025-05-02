@@ -1,6 +1,6 @@
 import { Windows } from "./windows.js";
 import { CError } from "./error.js";
-import { SecureLayer } from "../secure/secureLayer.js";
+import { PULSE } from "../secure/PULSE.js";
 
 export class API {
     static recent = {};
@@ -44,7 +44,7 @@ export class API {
                     return null;
             }
             // -- aggiungo l'header integrity se presente
-            const integrity = await SecureLayer.getIntegrity();
+            const integrity = await PULSE.getIntegrity();
             if (integrity) {
                 options.headers['X-Integrity'] = integrity;
             }

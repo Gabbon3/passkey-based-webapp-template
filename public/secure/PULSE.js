@@ -1,19 +1,23 @@
 import { Cripto } from "./cripto.js";
 import { AES256GCM } from "./aesgcm.js";
-import { SessionStorage } from "../utils/session.js";
 import { Bytes } from "../utils/bytes.js";
 import { ECDH } from "./ecdh.js";
+import { LocalStorage } from "../utils/local.js";
 
-export class SecureLayer {
+/**
+ * PULSE = Parallel Unlinkable Long-lived Session Exchange
+ */
+export class PULSE {
     // usato per memorizzare la vecchia chiave
     static recentKey = null;
     // ---
     static clientPrivateKey = null;
     static clientPublicKey = null;
     static clientPublicKeyHex = null;
-    // -- chiave derivata dall'handshake con il server
-    static key = null;
-    static counter = 0n;
+    /**
+     * Segreto derivata dall'handshake con il server
+     */
+    static sharedSecret = null;
     /**
      * Restituisce la stringa di integrità 
      * da associare alle fetch come header
@@ -21,34 +25,15 @@ export class SecureLayer {
      */
     static async getIntegrity() {
         // -- ottengo la chiave dal session storage
-        const key = SessionStorage.get('key');
-        const counter = Number(SessionStorage.get('counter'));
+        const sharedSecret = await LocalStorage.get('shared_secret');
         // ---
-        if (key instanceof Uint8Array == false || !counter) return null;
+        if (sharedSecret instanceof Uint8Array == false) return null;
         // -- ottengo la chiave nuova
-        const newKey = await this.updateKey(key, counter);
+        const derivedKey = await this.deriveKey(sharedSecret);
         // -- genero la challenge
         const challenge = Cripto.random_bytes(12);
-        const encrypted = await AES256GCM.encrypt(challenge, newKey);
-        return Bytes.hex.encode(encrypted);
-    }
-    /**
-     * Restituisce la nuova chiave mescolando il counter
-     * @param {Uint8Array} key 
-     * @param {BigInt} counter 
-     * @returns {Uint8Array}
-     */
-    static async updateKey(key, counter) {
-        this.recentKey = key;
-        // ---
-        counter++;
-        const counterBytes = Bytes.bigint.decode(BigInt(counter));
-        const newKey = await Cripto.hash(Bytes.merge([key, counterBytes], 8));
-        // -- salvo il nuovo counter e la nuova chiave
-        SessionStorage.set('key', newKey);
-        SessionStorage.set('counter', counter);
-        // ---
-        return newKey;
+        const encrypted = await AES256GCM.encrypt(challenge, derivedKey);
+        return Bytes.base64.encode(encrypted);
     }
     /**
      * Genera e imposta le chiavi da usare per l'handshake con il server
@@ -74,19 +59,25 @@ export class SecureLayer {
             Bytes.hex.decode(serverPublicKeyHex)
         );
         // ---
-        this.key = await ECDH.deriveSharedSecret(
+        const sharedSecret = await ECDH.deriveSharedSecret(
             this.clientPrivateKey,
             serverPublicKey
         );
+        // -- formalizzo
+        this.sharedSecret = await Cripto.hash(sharedSecret);
+        // --
         return true;
     }
+
     /**
-     * Calcola il counter basandosi sulla chiave
-     * @param {Uint8Array} [key=this.key] 
-     * @returns {number}
+     * Deriva la chiave sfruttando le finestre temporali
+     * @param {Uint8Array} sharedKey 
+     * @param {number} [interval=60] intervallo di tempo in secondi, di default a 1 ora
+     * @param {number} [shift=0] con 0 si intende l'intervallo corrente, con 1 il prossimo intervallo, con -1 il precedente
      */
-    static calculateCounter(key = this.key) {
-        return key[0] ^ key[17] ^ key[31];
+    static async deriveKey(sharedKey, interval = 3600, shift = 0) {
+        const windowIndex = Math.floor(((Date.now() / 1000) + (shift * interval)) / interval);
+        return await Cripto.hmac(`${windowIndex}`, sharedKey);
     }
 
     /**
@@ -97,12 +88,9 @@ export class SecureLayer {
     static async completeHandshake(serverPublicKeyHex) {
         // -- derivo il segreto condiviso
         await this.deriveSharedSecret(serverPublicKeyHex);
-        if (!this.key) return false;
-        // -- calcolo il contatore
-        this.counter = this.calculateCounter();
+        if (!this.sharedSecret) return false;
         // -- setto localmente
-        SessionStorage.set('key', this.key);
-        SessionStorage.set('counter', Number(this.counter));
+        LocalStorage.set('shared_secret', this.sharedSecret);
         // ---
         return true;
     }

@@ -1,18 +1,15 @@
 import { Op } from 'sequelize';
 import { JWT } from "../utils/jwt.util.js";
-import { RefreshTokenService } from './refreshToken.service.js';
 import { CError } from "../helpers/cError.js";
-import { Cripto } from "../utils/cripto.util.js";
 import { User } from "../models/user.model.js";
+import { AuthKeys } from '../models/authKeys.model.js';
 import { Roles } from "../config/roles.js";
 import { Mailer } from "../lib/mailer.js";
 import automatedEmails from "../config/automatedMails.js";
-import { RamDB } from "../utils/ramdb.js";
+import { PULSE } from '../protocols/PULSE.protocol.js';
+import { Bytes } from '../utils/bytes.util.js';
 
-export class AuthService {
-    constructor() {
-        this.refresh_token_service = new RefreshTokenService();
-    }
+export class SuperAuthService {
     /**
      * Registra un utente sul db
      * @param {string} email
@@ -52,95 +49,46 @@ export class AuthService {
         return verified_domains.includes(email.split('@')[1]);
     }
     /**
-     * Si suppone che l'utente abbia superato il controllo tramite passkey o otp via mail
-     * Esegue l'accesso e restituisce:
-     *  - *Utente (modello sequelize)
-     *  - Access Token (stringa)
-     *  - *Refresh Token (la stringa del hash token originale (non hashata))
-     * Deve generare quelli marcati con *
+     * 
      * @param {string} email
-     * @param {string} user_agent
-     * @param {string} ip_address
-     * @param {string} refresh_token_string
-     * @returns {{ access_token: string, refresh_token: string, user: User }} - access_token, user
+     * @param {string} publicKeyHex - chiave pubblica ECDH del client in esadecimale
+     * @returns {}
      */
-    async signin({ email, user_agent, ip_address, refresh_token_string, passKey }) {
+    async signin({ email, publicKeyHex }) {
         // -- cerco se l'utente esiste
         const user = await User.findOne({
             where: { email }
         });
         if (!user) throw new CError("AuthenticationError", "Invalid email", 401);
         if (user.verified !== true) throw new CError("AuthenticationError", "Email is not verified", 401);
-
+        // ---
+        const { kid, keyPair, sharedKey } = await PULSE.calculateSharedSecret(publicKeyHex);
         /**
-         * Refresh Token
+         * Genero l'access token
          */
-        let refresh_token = null;
-        let createNewRefreshToken = true;
-        if (refresh_token_string) {
-            // -- hash del refresh token
-            const hash_current_token = this.refresh_token_service.getTokenDigest(refresh_token_string);
-            refresh_token = await this.refresh_token_service.verify({ token_hash: hash_current_token }, user_agent);
-            
-            /**
-             * se False -> dispositivo bloccato
-             * se Null -> creerò un nuovo refresh token (inizialmente revocato se non è il primo dispositivo a connettersi all'account)
-             * se RefreshToken -> non ci sarà bisogno di creare nulla perchè è gia tutto in regola
-             */
-            if (refresh_token === false) throw new CError('', 'This device is locked', 403);
-            else if (refresh_token === null) createNewRefreshToken = true;
-            else createNewRefreshToken = false;
-        }
-
-        // -- creo il refresh token se richiesto
-        if (createNewRefreshToken) refresh_token = await this.createRefreshToken(user, user_agent, ip_address, email, passKey); 
-        // -- setto al refresh token la sua versione plain, per poterla restituire
-        else refresh_token.plain = refresh_token_string;
+        const accessToken = JWT.create({ uid: user.id, role: Roles.BASE, kid }, 3600);
         /**
-         * Genero l'access token solo se il refresh token NON è REVOCATO
+         * Salvo su auth keys
          */
-        const access_token = refresh_token.is_revoked ? null : JWT.create({ uid: user.id, role: Roles.BASE });
+        await PULSE.saveAuthKey(kid, sharedKey);
         /**
-         * APPROFONDIRE: da capire se generare il bypass anche con refresh non valido
+         * restituisco quindi:
+         *  - l'access token
+         *  - la chiave pubblica del server
          */
-        const bypass_token = Cripto.bypassToken();
-        RamDB.set(`byp-${bypass_token}`, { uid: user.id }, 30);
-        /**
-         * restituisco quindi l'access token se generato, il refresh token non hashato, il modello User e il bypass token se generato
-         */
-        return { access_token, refresh_token: refresh_token.plain, user, bypass_token };
+        return { accessToken, publicKey: keyPair.public_key.toString("hex") };
     }
+
     /**
-     * Crea e restituisce un refresh token
-     * invia una mail di nuovo accesso se il refresh token viene inizialmente bloccato
-     * motivo: non è il primo refresh token associato all'utente
-     * @param {User} user - modello dello user
-     * @param {string} user_agent 
-     * @param {string} ip_address 
-     * @param {string} email 
-     * @param {string} passKey - stringa che se valida abilita a priori il refresh token -> viene creato un refresh valido
-     * @returns {RefreshToken} 
+     * Elimina dal db la auth key
+     * @param {string} kid 
      */
-    async createRefreshToken(user, user_agent, ip_address, email, passKey) {
-        // ottengo un Model di Refresh token dal suo servizio
-        const refresh_token = await this.refresh_token_service.create(user.id, user_agent, ip_address, passKey);
-        // -- avviso l'utente se un nuovo dispositivo accede
-        if (refresh_token.is_revoked) {
-            // -- ottengo il testo
-            const { text, html } = automatedEmails.newSignIn({
-                email,
-                user_agent: refresh_token.user_agent_summary,
-                ip_address,
-            });
-            // -- invio la mail
-            await Mailer.send(
-                email, 
-                'New device Sign-In', 
-                text,
-                html
-            );
-        }
-        return refresh_token;
+    async signout(kid) {
+        return await AuthKeys.destroy({
+            where: {
+                kid: kid
+            }
+        });
     }
     /**
      * Restituisce tutti gli utenti

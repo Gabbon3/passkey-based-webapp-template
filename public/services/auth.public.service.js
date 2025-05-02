@@ -1,5 +1,6 @@
-import { SecureLayer } from "../secure/secureLayer.js";
+import { PULSE } from "../secure/PULSE.js";
 import { API } from "../utils/api.js";
+import { LocalStorage } from "../utils/local.js";
 
 export class AuthService {
     /**
@@ -11,7 +12,7 @@ export class AuthService {
      */
     static async signup(email, request_id, code) {
         // -- invio la richiesta
-        const res = await API.fetch('/api/auths/signup', {
+        const res = await API.fetch('/api/auth/signup', {
             method: 'POST',
             body: {
                 request_id,
@@ -33,15 +34,15 @@ export class AuthService {
      */
     static async signin(email, request_id, code) {
         // -- genero la coppia di chiavi
-        await SecureLayer.generateKeyPair();
+        await PULSE.generateKeyPair();
         // -- invio la richiesta
-        const res = await API.fetch('/api/auths/signin-e', {
+        const res = await API.fetch('/api/auth/signin-e', {
             method: 'POST',
             body: {
                 request_id,
                 code,
                 email,
-                publicKey: SecureLayer.clientPublicKeyHex
+                publicKey: PULSE.clientPublicKeyHex
             },
         });
         // -- verifico la risposta
@@ -49,8 +50,20 @@ export class AuthService {
         // ---
         const { accessToken, publicKey: serverPublicKey } = res;
         // ---
-        const completed = await SecureLayer.completeHandshake(serverPublicKey);
+        const completed = await PULSE.completeHandshake(serverPublicKey);
         return completed;
+    }
+    /**
+     * Effettua il logout
+     */
+    static async signout() {
+        const res = await API.fetch('/api/auth/signout', {
+            method: 'POST',
+        });
+        if (!res) return false;
+        // ---
+        LocalStorage.remove('shared_secret');
+        return true;
     }
 }
 

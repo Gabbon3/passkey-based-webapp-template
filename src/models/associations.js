@@ -1,6 +1,7 @@
 import { RefreshToken } from "./refreshToken.model.js";
 import { User } from "./user.model.js";
 import { Passkey } from "./passkey.model.js";
+import './authKeys.model.js';
 
 /*
  * In questo file sono presenti tutte le relazioni

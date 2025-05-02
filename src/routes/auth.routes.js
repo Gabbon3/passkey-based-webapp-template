@@ -1,14 +1,13 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
-import { AuthController } from "../controllers/auth.controller.js";
+import { SuperAuthController } from "../controllers/auth.controller.js";
 import { verifyAccessToken, verifyEmailCode } from "../middlewares/auth/auth.middlewares.js";
 import { verifyPasskey } from "../middlewares/auth/passkey.middleware.js";
 import { emailRateLimiter } from "../middlewares/rateLimiter.middlewares.js";
-import { Roles } from "../config/roles.js";
 // -- router
 const router = express.Router();
 // -- controller
-const controller = new AuthController();
+const controller = new SuperAuthController();
 // -- rate Limiter per le auth routes
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000,
@@ -21,21 +20,18 @@ router.use(limiter);
  */
 // -- AUTH ROUTES (USER)
 router.post('/signup', verifyEmailCode, controller.signup);
-router.post('/signin', emailRateLimiter, controller.signin);
-// -- SEARCH
-// router.get('/search/:email', verifyAccessToken(), controller.search);
-// -- EMAIL CODES
+// sign in con email
+// router.post('/signin-e', emailRateLimiter, verifyEmailCode, controller.signin);
+router.post('/signin-e', controller.signin);
+// sign in con passkey
+router.post('/signin-p', verifyPasskey(), controller.signin);
+router.post('/signout', verifyAccessToken({ checkIntegrity: false }), controller.signout);
+// test per vedere se l'access token va
+router.post('/test', verifyAccessToken(), (req, res, next) => {
+    res.status(200).json({ message: "Lesgo" });
+});
+
+// EMAIL OTP
 router.post('/otp', controller.sendEmailOTP);
-router.post('/otp-test', verifyEmailCode, controller.testEmailOtp);
-// -- ACCOUNT VERIFY
-router.post('/verify-account', verifyEmailCode, controller.verifyAccount);
-// -- SIGN-OUT
-router.post('/signout', verifyAccessToken(), controller.signout);
-// -- DELETE
-router.post('/delete', verifyPasskey(true), controller.delete);
-// -- MESSAGE AUTHENTICATION CODE VERIFICATION
-router.post('/verify-mac', controller.verifyMessageAuthenticationCode);
-// -- (DEV) restituisce un message autentication code
-router.post('/mac', controller.createMessageAuthenticationCode);
 
 export default router;

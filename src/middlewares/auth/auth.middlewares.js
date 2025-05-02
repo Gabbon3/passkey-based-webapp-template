@@ -5,76 +5,59 @@ import { RamDB } from '../../utils/ramdb.js';
 import { CError } from '../../helpers/cError.js';
 import { Mailer } from '../../lib/mailer.js';
 import { Cripto } from '../../utils/cripto.util.js';
-import { SecureLayer } from "../../utils/secureLayer.util.js";
+import { PULSE } from "../../protocols/PULSE.protocol.js";
 
 /**
- * Middleware per la verifica del jwt e refresh 
- * dell'access token se scaduto
- * @param {number} requiredRole
+ * Middleware di autenticazione e autorizzazione basato su JWT e controllo d'integrità opzionale.
+ *
+ * @function verifyAccessToken
+ * @param {Object} [options={}] - Opzioni per configurare il middleware.
+ * @param {number} [options.requiredRole=Roles.BASE] - Ruolo minimo richiesto per accedere alla rotta.
+ * @param {boolean} [options.checkIntegrity=true] - Se true, abilita la verifica dell'integrità tramite header 'X-Integrity'.
+ * @returns {Function} Express middleware async che valida l'access token e opzionalmente verifica l'integrità.
  */
-export const verifyAccessToken = (requiredRole = Roles.BASE) => (req, res, next) => {
-    const accessToken = req.cookies.access_token;
-    // -- verifico che esista
-    if (!accessToken) {
-        return res.status(401).json({ error: "Access denied" });
+export const verifyAccessToken = (
+    options = {}
+) => {
+    const {
+        requiredRole = Roles.BASE,
+        checkIntegrity = true,
+    } = options;
+    return async (req, res, next) => {
+        const accessToken = req.cookies.access_token;
+        // -- verifico che esista
+        if (!accessToken) {
+            return res.status(401).json({ error: "Access denied" });
+        }
+        // -- verifico che l'access token sia valido
+        const payload = JWT.verify(accessToken, 'default');
+        if (!payload) {
+            return res.status(401).json({ error: "Access denied" });
+        }
+        // -- se è tutto ok aggiungo il payload dell'utente alla request
+        req.user = payload;
+        // -- verifica se il payload è conforme
+        if (!req.user.uid) {
+            return res.status(400).json({ error: "Sign-in again" });
+        }
+        // -- verifica del ruolo
+        if (req.user.role < requiredRole) {
+            return res.status(403).json({ error: "Insufficient privileges" });
+        }
+        /**
+         * Verifico l'integrità della richiesta
+         */
+        if (checkIntegrity) {
+            const integrity = req.get('X-Integrity');
+            if (!integrity) return res.status(403).json({ error: "Integrity not found" });
+            // -- verifico l'integrity
+            const { kid } = payload;
+            const verified = await PULSE.verifyIntegrity(kid, integrity);
+            if (!verified) return res.status(403).json({ error: "Integrity failed" });
+        }
+        // -- passo al prossimo middleware o controller
+        next();
     }
-    // -- verifico che l'access token sia valido
-    const payload = JWT.verify(accessToken, 'default');
-    if (!payload) {
-        return res.status(401).json({ error: "Access denied" });
-    }
-    // -- se è tutto ok aggiungo il payload dell'utente alla request
-    req.user = payload;
-    // -- verifica se il payload è conforme
-    if (!req.user.uid) {
-        return res.status(400).json({ error: "Sign-in again." });
-    }
-    // -- verifica del ruolo
-    if (req.user.role < requiredRole) {
-        return res.status(403).json({ error: "Insufficient privileges" });
-    }
-    // -- passo al prossimo middleware o controller
-    next();
-}
-
-/**
- * Middleware per la verifica del jwt e refresh 
- * dell'access token se scaduto
- * @param {number} requiredRole
- */
-export const verifyAccessTokenSuper = (requiredRole = Roles.BASE) => (req, res, next) => {
-    const accessToken = req.cookies.access_token;
-    // -- verifico che esista
-    if (!accessToken) {
-        return res.status(401).json({ error: "Access denied" });
-    }
-    // -- verifico che l'access token sia valido
-    const payload = JWT.verify(accessToken, 'default');
-    if (!payload) {
-        return res.status(401).json({ error: "Access denied" });
-    }
-    // -- se è tutto ok aggiungo il payload dell'utente alla request
-    req.user = payload;
-    // -- verifica se il payload è conforme
-    if (!req.user.uid) {
-        return res.status(400).json({ error: "Sign-in again" });
-    }
-    // -- verifica del ruolo
-    if (req.user.role < requiredRole) {
-        return res.status(403).json({ error: "Insufficient privileges" });
-    }
-    /**
-     * Verifico l'integrità della richiesta
-     */
-    const integrity = req.get('X-Integrity');
-    if (!integrity) return res.status(403).json({ error: "Integrity not found" });
-    // -- verifico l'integrity
-    const { kid } = payload;
-    const verified = SecureLayer.verifyIntegrity(kid, integrity);
-    if (!verified) return res.status(403).json({ error: "Integrity failed" });
-    // ----
-    // -- passo al prossimo middleware o controller
-    next();
 }
 
 /**

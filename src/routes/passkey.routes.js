@@ -29,7 +29,7 @@ router.get('/list', verifyAccessToken(), controller.list);
 // -- RENAME
 router.post('/rename/:id', verifyAccessToken(), controller.rename);
 // -- DELETE
-router.delete('/:id', verifyAccessToken(Roles.SUDO), controller.delete);
+router.delete('/:id', verifyAccessToken({ requiredRole: Roles.SUDO }), controller.delete);
 // -- test
 router.post('/test', verifyPasskey(true), (req, res) => {
     res.status(200).json({ message: "Hi user " + req.user.uid });
