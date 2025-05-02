@@ -11,7 +11,7 @@ export const User = sequelize.define(
             primaryKey: true,
         },
         email: { type: DataTypes.STRING, allowNull: false, unique: true },
-        verified: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+        verified: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     },
     {
         tableName: "user",

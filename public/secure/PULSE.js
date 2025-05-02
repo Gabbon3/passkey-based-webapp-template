@@ -8,6 +8,7 @@ import { LocalStorage } from "../utils/local.js";
  * PULSE = Parallel Unlinkable Long-lived Session Exchange
  */
 export class PULSE {
+    static timeWindow = 1800; // 30 minuti
     // usato per memorizzare la vecchia chiave
     static recentKey = null;
     // ---
@@ -15,17 +16,13 @@ export class PULSE {
     static clientPublicKey = null;
     static clientPublicKeyHex = null;
     /**
-     * Segreto derivata dall'handshake con il server
-     */
-    static sharedSecret = null;
-    /**
      * Restituisce la stringa di integrità 
      * da associare alle fetch come header
      * @returns {string} stringa esadecimale dell'integrità
      */
     static async getIntegrity() {
         // -- ottengo la chiave dal session storage
-        const sharedSecret = await LocalStorage.get('shared_secret');
+        const sharedSecret = await LocalStorage.get('shared-secret');
         // ---
         if (sharedSecret instanceof Uint8Array == false) return null;
         // -- ottengo la chiave nuova
@@ -64,9 +61,7 @@ export class PULSE {
             serverPublicKey
         );
         // -- formalizzo
-        this.sharedSecret = await Cripto.hash(sharedSecret);
-        // --
-        return true;
+        return await Cripto.hash(sharedSecret);
     }
 
     /**
@@ -75,7 +70,7 @@ export class PULSE {
      * @param {number} [interval=60] intervallo di tempo in secondi, di default a 1 ora
      * @param {number} [shift=0] con 0 si intende l'intervallo corrente, con 1 il prossimo intervallo, con -1 il precedente
      */
-    static async deriveKey(sharedKey, interval = 3600, shift = 0) {
+    static async deriveKey(sharedKey, interval = PULSE.timeWindow, shift = 0) {
         const windowIndex = Math.floor(((Date.now() / 1000) + (shift * interval)) / interval);
         return await Cripto.hmac(`${windowIndex}`, sharedKey);
     }
@@ -87,10 +82,10 @@ export class PULSE {
      */
     static async completeHandshake(serverPublicKeyHex) {
         // -- derivo il segreto condiviso
-        await this.deriveSharedSecret(serverPublicKeyHex);
-        if (!this.sharedSecret) return false;
+        const sharedSecret = await this.deriveSharedSecret(serverPublicKeyHex);
+        if (!sharedSecret) return false;
         // -- setto localmente
-        LocalStorage.set('shared_secret', this.sharedSecret);
+        LocalStorage.set('shared-secret', sharedSecret);
         // ---
         return true;
     }

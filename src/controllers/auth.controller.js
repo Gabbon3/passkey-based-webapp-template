@@ -1,15 +1,16 @@
 import { asyncHandler } from "../middlewares/asyncHandler.middleware.js";
 import { CError } from "../helpers/cError.js";
-import { SuperAuthService } from "../services/auth.service.js";
+import { AuthService } from "../services/auth.service.js";
 import { Cripto } from "../utils/cripto.util.js";
 import { RamDB } from "../utils/ramdb.js";
 import { Mailer } from "../lib/mailer.js";
 import { Validator } from "../utils/validator.util.js";
 import automatedEmails from "../config/automatedMails.js";
+import { PULSE } from "../protocols/PULSE.protocol.js";
 
-export class SuperAuthController {
+export class AuthController {
     constructor() {
-        this.service = new SuperAuthService();
+        this.service = new AuthService();
     }
     /**
      * Registra utente
@@ -64,7 +65,7 @@ export class SuperAuthController {
         res.cookie("access_token", accessToken, {
             httpOnly: true,
             secure: true,
-            maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
+            maxAge: PULSE.jwtTimeout * 1000,
             sameSite: "Strict",
             path: "/",
         });

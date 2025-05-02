@@ -1,15 +1,16 @@
-import { Op } from 'sequelize';
+import { Op } from "sequelize";
 import { JWT } from "../utils/jwt.util.js";
 import { CError } from "../helpers/cError.js";
 import { User } from "../models/user.model.js";
-import { AuthKeys } from '../models/authKeys.model.js';
+import { AuthKeys } from "../models/authKeys.model.js";
 import { Roles } from "../config/roles.js";
 import { Mailer } from "../lib/mailer.js";
 import automatedEmails from "../config/automatedMails.js";
-import { PULSE } from '../protocols/PULSE.protocol.js';
-import { Bytes } from '../utils/bytes.util.js';
+import { PULSE } from "../protocols/PULSE.protocol.js";
+import { Bytes } from "../utils/bytes.util.js";
+import { RamDB } from "../utils/ramdb.js";
 
-export class SuperAuthService {
+export class AuthService {
     /**
      * Registra un utente sul db
      * @param {string} email
@@ -19,12 +20,18 @@ export class SuperAuthService {
     async signup(email, verified = false) {
         email = email.toLowerCase();
         // -- verifico che l'indirizzo email sia valido
-        if (!this.verifyEmail(email)) throw new CError("InvalidEmailDomain", "The email domain is not supported. Please use a well-known email provider like Gmail, iCloud, or Outlook.", 422);
+        if (!this.verifyEmail(email))
+            throw new CError(
+                "InvalidEmailDomain",
+                "The email domain is not supported. Please use a well-known email provider like Gmail, iCloud, or Outlook.",
+                422
+            );
         // -- verifico che l'email sia disponibile
         const user_exist = await User.findOne({
-            where: { email }
+            where: { email },
         });
-        if (user_exist) throw new CError("UserExist", "This email is already in use", 409);
+        if (user_exist)
+            throw new CError("UserExist", "This email is already in use", 409);
         // -- creo un nuovo utente
         const user = new User({ email, verified });
         // ---
@@ -32,24 +39,24 @@ export class SuperAuthService {
     }
     /**
      * Utility per verificare l'email dell'utente
-     * @param {string} email 
+     * @param {string} email
      * @returns {boolean}
      */
     verifyEmail(email) {
         const verified_domains = [
-            'gmail.com',    // Google
-            'icloud.com',   // Apple
-            'outlook.com',  // Microsoft
-            'hotmail.com',  // Microsoft (più vecchio, ma ancora usato)
-            'yahoo.com',    // Yahoo
-            'live.com',     // Microsoft
-            'libero.it',    // Libero
+            "gmail.com", // Google
+            "icloud.com", // Apple
+            "outlook.com", // Microsoft
+            "hotmail.com", // Microsoft (più vecchio, ma ancora usato)
+            "yahoo.com", // Yahoo
+            "live.com", // Microsoft
+            "libero.it", // Libero
         ];
         // ---
-        return verified_domains.includes(email.split('@')[1]);
+        return verified_domains.includes(email.split("@")[1]);
     }
     /**
-     * 
+     *
      * @param {string} email
      * @param {string} publicKeyHex - chiave pubblica ECDH del client in esadecimale
      * @returns {}
@@ -57,20 +64,30 @@ export class SuperAuthService {
     async signin({ email, publicKeyHex }) {
         // -- cerco se l'utente esiste
         const user = await User.findOne({
-            where: { email }
+            where: { email },
         });
-        if (!user) throw new CError("AuthenticationError", "Invalid email", 401);
-        if (user.verified !== true) throw new CError("AuthenticationError", "Email is not verified", 401);
+        if (!user)
+            throw new CError("AuthenticationError", "Invalid email", 401);
+        if (user.verified !== true)
+            throw new CError(
+                "AuthenticationError",
+                "Email is not verified",
+                401
+            );
         // ---
-        const { kid, keyPair, sharedKey } = await PULSE.calculateSharedSecret(publicKeyHex);
+        const { kid, keyPair, sharedSecret } =
+            await PULSE.calculateSharedSecret(publicKeyHex);
         /**
          * Genero l'access token
          */
-        const accessToken = JWT.create({ uid: user.id, role: Roles.BASE, kid }, 3600);
+        const accessToken = JWT.create(
+            { uid: user.id, role: Roles.BASE, kid },
+            PULSE.jwtTimeout
+        );
         /**
          * Salvo su auth keys
          */
-        await PULSE.saveAuthKey(kid, sharedKey);
+        await PULSE.saveAuthKey(kid, sharedSecret, user.id);
         /**
          * restituisco quindi:
          *  - l'access token
@@ -81,31 +98,31 @@ export class SuperAuthService {
 
     /**
      * Elimina dal db la auth key
-     * @param {string} kid 
+     * @param {string} kid
      */
     async signout(kid) {
         return await AuthKeys.destroy({
             where: {
-                kid: kid
-            }
+                kid: kid,
+            },
         });
     }
     /**
      * Restituisce tutti gli utenti
      * ricercando in like in questo modo %email%
-     * @param {string} email 
-     * @param {number} limit 
+     * @param {string} email
+     * @param {number} limit
      * @returns {Array}
      */
     async search(email, limit = 25) {
         return await User.findAll({
-            attributes: ['id', 'email'],
+            attributes: ["id", "email"],
             where: {
                 email: {
-                    [Op.like]: `%${email}%` // Works in PostgreSQL
-                }
+                    [Op.like]: `%${email}%`, // Works in PostgreSQL
+                },
             },
-            limit: limit
+            limit: limit,
         });
     }
     /**
@@ -117,14 +134,11 @@ export class SuperAuthService {
     async updateUser({ id, email }, updated_info) {
         const where = id ? { id } : { email };
         // ---
-        return await User.update(
-            updated_info,
-            { where }
-        );
+        return await User.update(updated_info, { where });
     }
     /**
      * Elimina un utente secondo le condizioni passate in input nel parametro where {}
-     * @param {object} where 
+     * @param {object} where
      * @returns {number} numero di record eliminati
      */
     async delete(where) {

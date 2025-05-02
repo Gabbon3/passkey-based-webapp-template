@@ -56,4 +56,4 @@ export class LocalStorage {
     }
 }
 
-// window.LocalStorage = LocalStorage;
+window.LocalStorage = LocalStorage;

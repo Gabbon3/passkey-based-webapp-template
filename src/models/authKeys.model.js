@@ -12,6 +12,10 @@ export const AuthKeys = sequelize.define(
             type: DataTypes.STRING(64), // oppure BLOB(32) se binario
             allowNull: false,
         },
+        user_id: {
+            type: DataTypes.UUID,
+            allowNull: false
+        },
         last_seen_at: {
             type: DataTypes.DATE,
             allowNull: true,

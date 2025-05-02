@@ -8,6 +8,7 @@ import passkeyRoutes from './routes/passkey.routes.js';
 import staticRoutes from './routes/static.routes.js';
 // super
 import authRoutes from './routes/auth.routes.js';
+import { date } from './utils/date.util.js';
 
 /**
  * MIDDLEWARES
@@ -54,6 +55,7 @@ try {
     // ---
     app.listen(3000, '0.0.0.0', () => {
         console.log(`☑️ Server`);
+        console.log(`☑️ ${date.format('%j %M %Y - %H:%i')}`);
     });
 } catch (error) {
     console.error('❌ Errore durante l\'avvio del server => ' + error);

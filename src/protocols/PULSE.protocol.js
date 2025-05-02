@@ -11,6 +11,8 @@ import { AuthKeys } from "../models/authKeys.model.js";
  */
 export class PULSE {
     static timeWindow = 1800; // 30 minuti
+    static ramTimeout = 3600; // tempo di vita dei segreti in ram
+    static jwtTimeout = 4 * 365 * 24 * 60 * 60; // tempo di vita del jwt in secondi
     /**
      * Verifica l'header di integrità
      * @param {string} kid key id, un guid v4
@@ -50,10 +52,12 @@ export class PULSE {
                 // -- aggiorna last_seen_at
                 fromDB.last_seen_at = new Date();
                 await fromDB.save();
-                // -- salvo in ram
-                RamDB.set(kid, fromDB.secret, 3600);
                 // ---
-                return Bytes.hex.decode(fromDB.secret);
+                const secret = Bytes.hex.decode(fromDB.secret);
+                // -- salvo in ram
+                RamDB.set(kid, secret, PULSE.ramTimeout);
+                // ---
+                return secret;
             }
             // ---
             return null;
@@ -66,12 +70,14 @@ export class PULSE {
      * Salva sul db la il segreto condiviso
      * @param {string} kid 
      * @param {string} sharedKey 
+     * @param {string} uid user id
      * @returns 
      */
-    static async saveAuthKey(kid, sharedKey) {
+    static async saveAuthKey(kid, sharedKey, uid) {
         const authKey = new AuthKeys({
             kid: kid,
             secret: Bytes.hex.encode(sharedKey),
+            user_id: uid,
         });
         return await authKey.save();
     }
@@ -104,8 +110,8 @@ export class PULSE {
         // -- formalizzo
         const formatted = Cripto.hash(sharedSecret);
         // -- salvo in Ram
-        RamDB.set(kid, formatted, 3600);
+        RamDB.set(kid, formatted, PULSE.ramTimeout);
         // ---
-        return { kid, keyPair, sharedKey: formatted };
+        return { kid, keyPair, sharedSecret: formatted };
     }
 }

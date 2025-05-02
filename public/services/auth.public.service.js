@@ -62,7 +62,7 @@ export class AuthService {
         });
         if (!res) return false;
         // ---
-        LocalStorage.remove('shared_secret');
+        LocalStorage.remove('shared-secret');
         return true;
     }
 }
