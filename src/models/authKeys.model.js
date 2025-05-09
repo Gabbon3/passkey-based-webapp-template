@@ -10,7 +10,7 @@ export const AuthKeys = sequelize.define(
     "AuthKeys",
     {
         kid: {
-            type: DataTypes.UUID,
+            type: DataTypes.STRING(64),
             primaryKey: true,
         },
         secret: {

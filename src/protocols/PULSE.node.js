@@ -5,6 +5,7 @@ import { Bytes } from "../utils/bytes.util.js";
 import { Cripto } from "../utils/cripto.util.js";
 import { AES256GCM } from "../utils/aesgcm.js";
 import { AuthKeys } from "../models/authKeys.model.js";
+import { Config } from "../serverConfig.js";
 
 /**
  * PULSE = Parallel Unlinkable Long-lived Session Exchange
@@ -14,17 +15,17 @@ export class PULSE {
     static jwtLifetime = 31 * 24 * 60 * 60; // in secondi
     /**
      * Verifica l'header di integrità
-     * @param {string} kid key id, un guid v4
+     * @param {string} guid uuid della auth key, un uuid v4
      * @param {string} integrity - stringa in base64
      * @returns {number | boolean} false -> integrita non valida, -1 segreto non trovato
      */
-    static async verifyIntegrity(kid, integrity) {
+    static async verifyIntegrity(guid, integrity) {
         const rawIntegrity = Bytes.base64.decode(integrity, true);
         // -- ottengo salt e lo separo dalla parte cifrata
         const salt = rawIntegrity.subarray(0, 12);
         const encrypted = rawIntegrity.subarray(12);
         // ---
-        const sharedKey = await this.getAuthKey(kid);
+        const sharedKey = await this.getAuthKey(guid);
         if (!sharedKey) return -1;
         // -- provo con la finestra corrente e quelle adiacenti (-1, 0, +1)
         const shifts = [0, -1, 1];
@@ -47,18 +48,19 @@ export class PULSE {
      */
     static async getAuthKey(guid) {
         try {
+            const kid = await this.calculateKid(guid);
             // -- RAM
-            const fromRam = RamDB.get(guid);
+            const fromRam = RamDB.get(kid);
             if (fromRam) return fromRam;
             // -- DB
-            const fromDB = await AuthKeys.findByPk(guid);
+            const fromDB = await AuthKeys.findByPk(kid);
             if (fromDB) {
                 // -- aggiorna last_seen_at
                 fromDB.last_seen_at = new Date();
                 await fromDB.save();
                 // -- salvo in ram
                 const decodedKey = Bytes.hex.decode(fromDB.secret);
-                RamDB.set(guid, decodedKey, 3600);
+                RamDB.set(kid, decodedKey, 3600);
                 // ---
                 return decodedKey;
             }
@@ -71,6 +73,15 @@ export class PULSE {
     }
 
     /**
+     * Restituisce l'hash pepato del guid della auth key
+     * @param {string} guid 
+     * @returns {string}
+     */
+    static async calculateKid(guid) {
+        return await Cripto.hmac(guid, Config.PULSEPEPPER, { output_encoding: 'hex' });
+    }
+
+    /**
      * Salva sul db la il segreto condiviso
      * @param {string} guid 
      * @param {string} sharedKey 
@@ -78,8 +89,10 @@ export class PULSE {
      * @returns 
      */
     static async saveAuthKey(guid, sharedKey, uid) {
+        const kid = await this.calculateKid(guid);
+        // ---
         const authKey = new AuthKeys({
-            kid: guid,
+            kid: kid,
             secret: Bytes.hex.encode(sharedKey),
             user_id: uid,
         });

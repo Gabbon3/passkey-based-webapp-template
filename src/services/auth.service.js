@@ -95,9 +95,11 @@ export class AuthService {
 
     /**
      * Elimina dal db la auth key
-     * @param {string} kid
+     * @param {string} guid
      */
-    async signout(kid) {
+    async signout(guid) {
+        const kid = await PULSE.calculateKid(guid);
+        // ---
         return await AuthKeys.destroy({
             where: {
                 kid: kid,
