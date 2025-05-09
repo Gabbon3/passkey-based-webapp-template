@@ -83,13 +83,13 @@ export const verifyPasskey = (required = false) => {
                     challenge,
                     origin: Config.ORIGIN,
                     factor: "either",
-                    publicKey: passkey.publicKey,
-                    prevCounter: passkey.signCount,
+                    publicKey: passkey.public_key,
+                    prevCounter: passkey.sign_count,
                     userHandle: credential.userHandle
                 }
             );
             // -- aggiorno sign_count e salvo la passkey
-            passkey.signCount = assertionResult.authnrData.get("counter");
+            passkey.sign_count = assertionResult.authnrData.get("counter");
             passkey.updatedAt = new Date();
             await passkey.save({
                 silent: true
@@ -103,13 +103,12 @@ export const verifyPasskey = (required = false) => {
          * Se i controlli passano, genero il JWT
          */
         const jwt = JWT.create({ 
-            uid: passkey.userId, 
-            email: "" 
-        }, 5 * 60, 'passkey');
+            uid: passkey.user_id,
+        }, 2 * 60, 'passkey');
         res.cookie('passkey_token', jwt, {
             httpOnly: true,
             secure: true,
-            maxAge: JWT.passkey_token_lifetime * 1000,
+            maxAge: 2 * 60 * 1000,
             sameSite: 'Strict',
             path: '/',
         });

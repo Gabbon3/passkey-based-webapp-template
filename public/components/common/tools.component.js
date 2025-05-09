@@ -3,12 +3,15 @@ import { LocalStorage } from "../../utils/local.js";
 import { Log } from "../../utils/log.js";
 import { API } from "../../utils/api.js";
 import { date } from "../../utils/date.util.js";
+import { Windows } from "../../utils/windows.js";
+import { PasskeyService } from "../../services/passkey.public.service.js";
 
 class ToolsComponent extends HTMLElement {
     static default_sections = [
-        'message-authentication-code',
-        'app-theme',
-        'delete-account',
+        "activate-new-passkey",
+        "message-authentication-code",
+        "app-theme",
+        "delete-account",
     ];
 
     constructor() {
@@ -16,43 +19,82 @@ class ToolsComponent extends HTMLElement {
         this.initialized = false;
         this.sections = {};
         this.events = {
-            'message-authentication-code': () => {
+            "activate-new-passkey": () => {
+                /**
+                 * 
+                 */
+                Form.register("form-activate-new-passkey", async (form, elements) => {
+                    const email = await LocalStorage.get('user-email');
+                    if (!email) return Log.summon(1, 'No email provided');
+                    // ---
+                    const { request_id, code } = elements;
+                    // ---
+                    Windows.loader(true);
+                    const authenticated = await PasskeyService.activateNewPasskey(
+                        email,
+                        request_id,
+                        code
+                    );
+                    if (authenticated) {
+                        form.reset();
+                        Log.summon(0, `New passkey added for the account ${email}`);
+                    }
+                    Windows.loader(false);
+                });
+            },
+            "message-authentication-code": () => {
                 /**
                  * CHECK MESSAGE AUTHENTICATION CODE
                  */
-                Form.register('form-cmac', async (form, elements) => {
+                Form.register("form-cmac", async (form, elements) => {
                     const { code } = elements;
-                    if (!code.includes('.')) return Log.summon(1, "Invalid format");
+                    if (!code.includes("."))
+                        return Log.summon(1, "Invalid format");
                     // -- email
-                    const email = await LocalStorage.get('email-utente');
+                    const email = await LocalStorage.get("email-utente");
                     // ---
-                    const res = await API.fetch('/auth/vmac', {
-                        method: 'POST',
+                    const res = await API.fetch("/auth/vmac", {
+                        method: "POST",
                         body: { email, mac: code.trim() },
                         loader: true,
                     });
                     const { status, timestamp } = res;
                     // -- creo il report
-                    const icon = ['check', 'delete_history', 'warning', 'warning'][status - 1];
-                    const type = ['success', 'warning', 'danger', 'danger'][status - 1];
-                    const title = ['Valid', 'Expired', 'Not valid', 'Not yours'][status - 1];
+                    const icon = [
+                        "check",
+                        "delete_history",
+                        "warning",
+                        "warning",
+                    ][status - 1];
+                    const type = ["success", "warning", "danger", "danger"][
+                        status - 1
+                    ];
+                    const title = [
+                        "Valid",
+                        "Expired",
+                        "Not valid",
+                        "Not yours",
+                    ][status - 1];
                     const message = [
-                        '~', 
-                        'This token is valid but expired', 
-                        'This token does not come from us, be careful', 
-                        'This token is valid but was not generated for you, someone may have tried to use their (valid) one to cheat you, be careful'
+                        "~",
+                        "This token is valid but expired",
+                        "This token does not come from us, be careful",
+                        "This token is valid but was not generated for you, someone may have tried to use their (valid) one to cheat you, be careful",
                     ][status - 1];
                     let report = `<div class="mt-2 alert ${type} monospace">
                     <div class="flex d-column gap-75">
                         <strong title="Status" class="flex y-center gap-75"><span class="material-symbols-rounded">${icon}</span> <span>${title}</span> </strong>
                         <div title="Message" class="flex y-center gap-75"><span class="material-symbols-rounded">info</span> <span>${message}</span> </div>
-                        <div title="Issued on" class="flex y-center gap-75"><span class="material-symbols-rounded">today</span> <span>${date.format('%d %M %Y at %H:%i', new Date(timestamp))}</span> </div>
+                        <div title="Issued on" class="flex y-center gap-75"><span class="material-symbols-rounded">today</span> <span>${date.format(
+                            "%d %M %Y at %H:%i",
+                            new Date(timestamp)
+                        )}</span> </div>
                     </div></div>`;
                     // ---
-                    document.getElementById('cmac-result').innerHTML = report;
+                    document.getElementById("cmac-result").innerHTML = report;
                 });
-            }
-        }
+            },
+        };
     }
     /**
      * Inizializza gli eventi associati alle sezioni se presenti
@@ -68,12 +110,14 @@ class ToolsComponent extends HTMLElement {
         this.initialized = true;
         // ---
         // se 'revert' allora nascondo tutte le sezioni di default
-        const hide_all_sections = this.getAttribute('revert') ? false : true;
+        const hide_all_sections = this.getAttribute("revert") ? false : true;
         // per ogni sezione disponibile verifico se sono state passate proprietà di visualizzazione custom
         // ad esempio potrebbe essere che il delete-account sia impostato su false, cosi lo prendo
         for (let section of ToolsComponent.default_sections) {
             const attribute = this.getAttribute(section);
-            this.sections[section] = attribute ? JSON.parse(attribute) : hide_all_sections;
+            this.sections[section] = attribute
+                ? JSON.parse(attribute)
+                : hide_all_sections;
         }
         // passo le sezioni da mostrare o no se ce ne sono e renderizzo il componente
         this.innerHTML = this.render();
@@ -98,8 +142,32 @@ class ToolsComponent extends HTMLElement {
             </button>
         </div>
         `;
+        // Attivazione nuova passkey
+        if (sections["activate-new-passkey"]) {
+            html += `
+        <!-- ACTIVATE NEW PASSKEY -->
+        <hr>
+        <div class="maincolor red">
+            <h3 class="icon slider" slider="cont-activate-new-passkey">
+                <span class="material-symbols-rounded">passkey</span>
+                New Passkey
+            </h3>
+            <div class="isle bg-4 slider-cont maincolor red" id="cont-activate-new-passkey">
+                <form id="form-activate-new-passkey">
+                    <mfa-input input-id="fanp-otp" class="mb-2"></mfa-input>
+                    <email-verify-btn target-id="fanp-otp"></email-verify-btn>
+                    <hr>
+                    <button type="submit" class="btn primary mt-2">
+                        <span class="material-symbols-rounded">passkey</span>
+                        Activate
+                    </button>
+                </form>
+            </div>
+        </div>
+        `;
+        }
         // Message authentication code
-        if (sections['message-authentication-code']) {
+        if (sections["message-authentication-code"]) {
             html += `
             <!-- CHECK MESSAGE AUTHENTICATION CODE -->
         <hr>
@@ -141,7 +209,7 @@ class ToolsComponent extends HTMLElement {
         `;
         }
         // Tema app
-        if (sections['app-theme']) {
+        if (sections["app-theme"]) {
             html += `
             <hr>
         <!-- TEMA APP -->
@@ -175,14 +243,16 @@ class ToolsComponent extends HTMLElement {
         <!-- ---- -->
         <div class="flex gap-50">
             ${
-                sections['delete-account']
+                sections["delete-account"]
                     ? `<button class="btn danger open" data-target-open="win-delete-account">
                 <span class="material-symbols-rounded">delete_forever</span>
                 Delete Account
             </button>`
                     : ""
             }
-            <logout-btn class="btn warning ${sections['delete-account'] ? 'last' : ''}"></logout-btn>
+            <logout-btn class="btn warning ${
+                sections["delete-account"] ? "last" : ""
+            }"></logout-btn>
         </div>`;
         return html;
     }

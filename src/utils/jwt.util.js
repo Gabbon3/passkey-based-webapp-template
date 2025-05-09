@@ -9,6 +9,7 @@ export class JWT {
      */
     static keys = {
         default: Config.ACCESS_TOKEN_SECRET, // chiave per firmare i jwt base
+        passkey: Config.PASSKEY_TOKEN_SECRET, // chiave per firmare i jwt base
     }
 
     /**

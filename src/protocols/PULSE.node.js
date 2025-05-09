@@ -49,7 +49,6 @@ export class PULSE {
         try {
             // -- RAM
             const fromRam = RamDB.get(guid);
-            console.log('FROM RAM', fromRam);
             if (fromRam) return fromRam;
             // -- DB
             const fromDB = await AuthKeys.findByPk(guid);

@@ -20,9 +20,9 @@ router.use(limiter);
  * auth/passkey/*
  */
 // -- START REGISTRATION
-router.post('/register', verifyEmailCode, controller.startRegistration);
+router.post('/new', verifyEmailCode, controller.startRegistration);
 // -- COMPLETE REGISTRATION
-router.post('/register', controller.completeRegistration);
+router.post('/complete', controller.completeRegistration);
 router.get('/', controller.getAuthOptions);
 // -- PASSKEY-LIST
 router.get('/list', verifyAuth(), controller.list);

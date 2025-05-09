@@ -3,6 +3,7 @@ import { API } from "../utils/api.js";
 import { CKE } from "../utils/cke.public.util.js";
 import { LocalStorage } from "../utils/local.js";
 import { SessionStorage } from "../utils/session.js";
+import { PasskeyService } from "./passkey.public.service.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
     await AuthService.init();
@@ -92,6 +93,45 @@ export class AuthService {
         LocalStorage.set('user-email', email);
         // ---
         return sharedSecret;
+    }
+    /**
+     * 
+     * @param {string} email
+     * @returns {boolean | Uint8Array} se tutto ok restituisce il segreto condiviso
+     */
+    static async signinWithPasskey(email) {
+        // -- genero la coppia di chiavi
+        const publicKeyHex = await PULSE.generateKeyPair();
+        // -- invio la richiesta
+        return await PasskeyService.authenticate({
+            endpoint: '/api/auth/signin-p',
+            body: { 
+                email,
+                publicKey: publicKeyHex,
+            }
+        }, async (res) => {
+            // -- verifico la risposta
+            if (!res) return false;
+            // ---
+            const { publicKey: serverPublicKey } = res;
+            // -- ottengo il segreto condiviso e lo cifro in localstorage con CKE
+            const sharedSecret = await PULSE.completeHandshake(serverPublicKey);
+            if (!sharedSecret) return false;
+            SessionStorage.set('shared-secret', sharedSecret);
+            /**
+             * Inizializzo CKE localmente
+             */
+            const ckeKey = await CKE.set();
+            if (!ckeKey) return false;
+            // -- cifro localmente lo shared secret con CKE
+            LocalStorage.set('shared-secret', sharedSecret, ckeKey);
+            /**
+             * Memorizzo altre informzioni
+             */
+            LocalStorage.set('user-email', email);
+            // ---
+            return sharedSecret;
+        });
     }
     /**
      * Effettua il logout

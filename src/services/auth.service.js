@@ -90,7 +90,7 @@ export class AuthService {
          *  - l'access token
          *  - la chiave pubblica del server
          */
-        return { jwt, publicKey: keyPair.public_key.toString("hex") };
+        return { uid: user.id, jwt, publicKey: keyPair.public_key.toString("hex") };
     }
 
     /**

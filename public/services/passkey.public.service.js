@@ -10,8 +10,8 @@ export class PasskeyService {
      * @param {string} email 
      * @returns {boolean}
      */
-    static async activate_new_passkey(email, request_id = null, code = null) {
-        const req = await API.fetch(`/auth/passkey/register-${request_id ? 'e' : 'a'}`, {
+    static async activateNewPasskey(email, request_id = null, code = null) {
+        const req = await API.fetch(`/api/passkey/new`, {
             method: "POST",
             body: { email, request_id, code }
         });
@@ -43,7 +43,7 @@ export class PasskeyService {
             type: credential.type,
         };
         // --- invio al server
-        const res = await API.fetch("/auth/passkey/register", {
+        const res = await API.fetch("/api/passkey/complete", {
             method: "POST",
             body: {
                 publicKeyCredential: Bytes.base64.encode(
@@ -61,8 +61,8 @@ export class PasskeyService {
      * Fa firmare una challenge generata dal server per validare la passkey restituendo gli auth data
      * @returns {object} request id (per identificare la richiesta) e auth data (per autenticarsi)
      */
-    static async get_auth_data() {
-        const chl_req_id = await API.fetch(`/auth/passkey/`, {
+    static async getAuthData() {
+        const chl_req_id = await API.fetch(`/api/passkey/`, {
             method: "GET",
         });
         if (!chl_req_id) return false;
@@ -144,7 +144,7 @@ export class PasskeyService {
          */
         if (bypass_token === false && (!passkey_token_is_valid || options.passkey_need === true)) {
             // -- ottengo gli auth data e la request id
-            auth_data = await this.get_auth_data();
+            auth_data = await this.getAuthData();
             if (!auth_data) return auth_data;
             // -- ottengo l'id della richiesta per farla identificare dal middleware
             request_id = auth_data.request_id;
@@ -179,7 +179,7 @@ export class PasskeyService {
      * Restituisce la lista delle passkeys dell'utente
      */
     static async list() {
-        const res = await API.fetch('/auth/passkey/list', {
+        const res = await API.fetch('/api/passkey/list', {
             method: 'GET',
         });
         if (!res) return null;
@@ -189,7 +189,7 @@ export class PasskeyService {
      * Rinomina
      */
     static async rename(id, name) {
-        const res = await API.fetch(`/auth/passkey/rename/${id}`, {
+        const res = await API.fetch(`/api/passkey/rename/${id}`, {
             method: 'POST',
             body: { name },
         });
@@ -201,7 +201,7 @@ export class PasskeyService {
      * @param {string} id 
      */
     static async delete(id) {
-        const res = await API.fetch(`/auth/passkey/${id}`, {
+        const res = await API.fetch(`/api/passkey/${id}`, {
             method: 'DELETE',
         });
         if (!res) return false;
@@ -209,4 +209,4 @@ export class PasskeyService {
     }
 }
 
-// window.PasskeyService = PasskeyService;
+window.PasskeyService = PasskeyService;

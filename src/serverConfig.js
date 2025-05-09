@@ -6,6 +6,7 @@ export class Config {
 
     // JWT
     static ACCESS_TOKEN_SECRET = Buffer.from(process.env.ACCESS_TOKEN_SECRET, 'hex');
+    static PASSKEY_TOKEN_SECRET = Buffer.from(process.env.PASSKEY_TOKEN_SECRET, 'hex');
 
     // Database
     static DB_HOST = process.env.DB_HOST;

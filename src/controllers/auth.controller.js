@@ -56,13 +56,20 @@ export class AuthController {
         /**
          * Servizio
          */
-        const { jwt, publicKey: serverPublicKey } =
+        const { uid, jwt, publicKey: serverPublicKey } =
             await this.service.signin({
                 email,
                 publicKeyHex
             });
         // -- imposto l'access token nei cookies
         res.cookie("jwt", jwt, {
+            httpOnly: true,
+            secure: true,
+            maxAge: PULSE.jwtLifetime * 1000,
+            sameSite: "Strict",
+            path: "/",
+        });
+        res.cookie("uid", uid, {
             httpOnly: true,
             secure: true,
             maxAge: PULSE.jwtLifetime * 1000,
