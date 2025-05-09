@@ -6,7 +6,7 @@ import { AuthKeys } from "../models/authKeys.model.js";
 import { Roles } from "../config/roles.js";
 import { Mailer } from "../lib/mailer.js";
 import automatedEmails from "../config/automatedMails.js";
-import { PULSE } from "../protocols/PULSE.protocol.js";
+import { PULSE } from "../protocols/PULSE.node.js";
 import { Bytes } from "../utils/bytes.util.js";
 import { RamDB } from "../utils/ramdb.js";
 
@@ -80,10 +80,7 @@ export class AuthService {
         /**
          * Genero l'access token
          */
-        const accessToken = JWT.create(
-            { uid: user.id, role: Roles.BASE, kid },
-            PULSE.jwtTimeout
-        );
+        const jwt = JWT.create({ uid: user.id, role: Roles.BASE, kid }, PULSE.jwtLifetime);
         /**
          * Salvo su auth keys
          */
@@ -93,7 +90,7 @@ export class AuthService {
          *  - l'access token
          *  - la chiave pubblica del server
          */
-        return { accessToken, publicKey: keyPair.public_key.toString("hex") };
+        return { jwt, publicKey: keyPair.public_key.toString("hex") };
     }
 
     /**

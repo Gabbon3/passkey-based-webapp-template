@@ -5,7 +5,7 @@ import { RamDB } from '../../utils/ramdb.js';
 import { CError } from '../../helpers/cError.js';
 import { Mailer } from '../../lib/mailer.js';
 import { Cripto } from '../../utils/cripto.util.js';
-import { PULSE } from "../../protocols/PULSE.protocol.js";
+import { PULSE } from "../../protocols/PULSE.node.js";
 
 /**
  * Middleware di autenticazione e autorizzazione basato su JWT e controllo d'integrità opzionale.
@@ -16,7 +16,7 @@ import { PULSE } from "../../protocols/PULSE.protocol.js";
  * @param {boolean} [options.checkIntegrity=true] - Se true, abilita la verifica dell'integrità tramite header 'X-Integrity'.
  * @returns {Function} Express middleware async che valida l'access token e opzionalmente verifica l'integrità.
  */
-export const verifyAccessToken = (
+export const verifyAuth = (
     options = {}
 ) => {
     const {
@@ -24,7 +24,7 @@ export const verifyAccessToken = (
         checkIntegrity = true,
     } = options;
     return async (req, res, next) => {
-        const accessToken = req.cookies.access_token;
+        const accessToken = req.cookies.jwt;
         // -- verifico che esista
         if (!accessToken) {
             return res.status(401).json({ error: "Access denied" });
@@ -53,6 +53,8 @@ export const verifyAccessToken = (
             // -- verifico l'integrity
             const { kid } = payload;
             const verified = await PULSE.verifyIntegrity(kid, integrity);
+            // ---
+            if (verified === -1) return res.status(404).json({ error: "Secret not found" });
             if (!verified) return res.status(403).json({ error: "Integrity failed" });
         }
         // -- passo al prossimo middleware o controller

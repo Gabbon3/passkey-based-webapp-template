@@ -25,9 +25,6 @@ export class Config {
     static ORIGIN = process.env.ORIGIN;
     static RPID = process.env.RPID;
 
-    // PULSE
-    static PULSEPEPPER = Buffer.from(process.env.PULSEPEPPER, 'hex');
-
     // Dev
     static DEV = process.env.DEV === 'true';
 

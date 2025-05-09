@@ -1,6 +1,6 @@
 import { Windows } from "./windows.js";
 import { CError } from "./error.js";
-import { PULSE } from "../secure/PULSE.js";
+import { PULSE } from "../secure/PULSE.browser.js";
 
 export class API {
     static recent = {};

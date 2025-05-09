@@ -1,6 +1,6 @@
 import express from "express";
 import { PasskeyController } from "../controllers/passkey.controller.js";
-import { verifyAccessToken, verifyEmailCode } from "../middlewares/auth/auth.middlewares.js";
+import { verifyAuth, verifyEmailCode } from "../middlewares/auth/auth.middlewares.js";
 import { verifyPasskey } from "../middlewares/auth/passkey.middleware.js";
 import rateLimit from "express-rate-limit";
 import { Roles } from "../config/roles.js";
@@ -25,11 +25,11 @@ router.post('/register', verifyEmailCode, controller.startRegistration);
 router.post('/register', controller.completeRegistration);
 router.get('/', controller.getAuthOptions);
 // -- PASSKEY-LIST
-router.get('/list', verifyAccessToken(), controller.list);
+router.get('/list', verifyAuth(), controller.list);
 // -- RENAME
-router.post('/rename/:id', verifyAccessToken(), controller.rename);
+router.post('/rename/:id', verifyAuth(), controller.rename);
 // -- DELETE
-router.delete('/:id', verifyAccessToken({ requiredRole: Roles.SUDO }), controller.delete);
+router.delete('/:id', verifyAuth({ requiredRole: Roles.SUDO }), controller.delete);
 // -- test
 router.post('/test', verifyPasskey(true), (req, res) => {
     res.status(200).json({ message: "Hi user " + req.user.uid });

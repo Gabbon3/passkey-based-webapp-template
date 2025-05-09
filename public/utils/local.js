@@ -20,6 +20,14 @@ export class LocalStorage {
         localStorage.setItem(`${LocalStorage.prefix}-${key}`, Bytes.base64.encode(data));
     }
     /**
+     * Verifica se un elemento esiste nel localstorage
+     * @param {string} key 
+     * @returns {boolean} true se esiste false se non esiste
+     */
+    static exist(key) {
+        return localStorage.getItem(`${LocalStorage.prefix}-${key}`) !== null;
+    }
+    /**
      * Ricava qualcosa dal localstorage
      * @param {string} key nome di riferimento della risorsa nel local storage
      * @param {Uint8Array} crypto_key se diverso da null verrà eseguita la decifratura del value

@@ -6,7 +6,7 @@ import { RamDB } from "../utils/ramdb.js";
 import { Mailer } from "../lib/mailer.js";
 import { Validator } from "../utils/validator.util.js";
 import automatedEmails from "../config/automatedMails.js";
-import { PULSE } from "../protocols/PULSE.protocol.js";
+import { PULSE } from "../protocols/PULSE.node.js";
 
 export class AuthController {
     constructor() {
@@ -46,7 +46,7 @@ export class AuthController {
             );
         }
         // -- verifico se l'utente è già autenticato
-        if (req.cookies.access_token) {
+        if (req.cookies.jwt) {
             throw new CError(
                 "AlreadyLoggedIn",
                 "Please logout first",
@@ -56,23 +56,23 @@ export class AuthController {
         /**
          * Servizio
          */
-        const { accessToken, publicKey: serverPublicKey } =
+        const { jwt, publicKey: serverPublicKey } =
             await this.service.signin({
                 email,
                 publicKeyHex
             });
         // -- imposto l'access token nei cookies
-        res.cookie("access_token", accessToken, {
+        res.cookie("jwt", jwt, {
             httpOnly: true,
             secure: true,
-            maxAge: PULSE.jwtTimeout * 1000,
+            maxAge: PULSE.jwtLifetime * 1000,
             sameSite: "Strict",
             path: "/",
         });
         // Rate Limiter Email - rimuovo dal ramdb il controllo sui tentativi per accedere all'account
         RamDB.delete(`login-attempts-${email}`);
         // ---
-        res.status(201).json({ accessToken, publicKey: serverPublicKey });
+        res.status(201).json({ jwt, publicKey: serverPublicKey });
     });
     /**
      * Effettua la disconnessione:
@@ -83,7 +83,7 @@ export class AuthController {
         // -- elimino dal db
         this.service.signout(req.user.kid);
         // ---
-        res.clearCookie('access_token');
+        res.clearCookie('jwt');
         // ---
         res.status(201).json({ message: 'Bye' });
     });

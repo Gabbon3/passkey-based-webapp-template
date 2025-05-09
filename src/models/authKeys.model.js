@@ -10,9 +10,8 @@ export const AuthKeys = sequelize.define(
     "AuthKeys",
     {
         kid: {
-            type: DataTypes.STRING(64),
+            type: DataTypes.UUID,
             primaryKey: true,
-            comment: "Calcolato con hmac(guid, pepper) - 64 caratteri esadecimali",
         },
         secret: {
             type: DataTypes.STRING(64), // oppure BLOB(32) se binario

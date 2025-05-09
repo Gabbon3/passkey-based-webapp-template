@@ -90,6 +90,31 @@ export class Cripto {
     }
 
     /**
+     * Deriva una chiave sfruttando l'algoritmo HKDF
+     * @param {Uint8Array} ikm - input key material
+     * @param {Uint8Array} salt -
+     * @param {Uint8Array} additionalInfo -  
+     * @param {number} keyLen 
+     * @returns {Uint8Array}
+     */
+    static async HKDF(ikm, salt, additionalInfo = new Uint8Array(), keyLen = 256) {
+        const hkdf = await crypto.subtle.importKey("raw", ikm, { name: "HKDF" }, false, ["deriveKey"]);
+        const key = await crypto.subtle.deriveKey(
+            {
+                name: "HKDF",
+                salt: salt,
+                info: additionalInfo,
+                hash: "SHA-256"
+            },
+            hkdf,
+            { name: "AES-GCM", length: keyLen },
+            true,
+            ["encrypt", "decrypt"]
+        );
+        return new Uint8Array(await crypto.subtle.exportKey('raw', key));
+    }
+
+    /**
      * Calcola l'hash di un messaggio.
      * @param {string | Uint8Array} message - Messaggio da hashare.
      * @param {Object} [options={}] - Opzioni per configurare l'hash.

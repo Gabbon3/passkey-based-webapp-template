@@ -1,10 +1,11 @@
 import { AuthService } from "../services/auth.public.service.js";
 import { Form } from "../utils/form.js";
+import { LocalStorage } from "../utils/local.js";
 import { Log } from "../utils/log.js";
-import { SessionStorage } from "../utils/session.js";
 import { Windows } from "../utils/windows.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
+    SigninUI.init();
     /**
      * Form per l'accesso con OTP
      */
@@ -20,3 +21,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         Windows.loader(false);
     });
 });
+
+class SigninUI {
+    /**
+     * Inizializza l'interfaccia per il login
+     */
+    static async init() {
+        const userEmail = await LocalStorage.get('user-email');
+        if (userEmail) document.querySelector('#email').value = userEmail;
+        // ---
+    }
+}
