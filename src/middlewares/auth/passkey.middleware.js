@@ -39,7 +39,7 @@ export const verifyPasskey = (required = false) => {
          */
         const cookie_jwt = req.cookies.passkey_token ?? null;
         if (required === false && cookie_jwt && !request_id) {
-            const payload = JWT.verify(cookie_jwt, 'passkey');
+            const payload = JWT.verify(cookie_jwt, Config.PASSKEY_TOKEN_SECRET);
             if (payload) {
                 req.user = {
                     uid: payload.uid,

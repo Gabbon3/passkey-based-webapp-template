@@ -3,14 +3,6 @@ import { Config } from "../serverConfig.js";
 
 export class JWT {
     // ---
-    /**
-     * Raccolta delle chiavi da usare nei tokens
-     * sono entrambe due Buffer
-     */
-    static keys = {
-        default: Config.ACCESS_TOKEN_SECRET, // chiave per firmare i jwt base
-        passkey: Config.PASSKEY_TOKEN_SECRET, // chiave per firmare i jwt base
-    }
 
     /**
      * Tempi di scadenza dei token in secondi
@@ -21,26 +13,26 @@ export class JWT {
 
     /**
      * Crea un JWT generico
-     * @param payload
-     * @param lifetime - tempo di scadenza del jwt in secondi
-     * @param key - nome della chiave da usare per firmare questo jwt
+     * @param {Object} payload
+     * @param {number} lifetime - tempo di scadenza del jwt in secondi
+     * @param {Uint8Array} key - chiave da usare per firmare questo jwt
      * @returns il jwt in formato stringa
      */
-    static create(payload, lifetime, key = 'default') {
+    static create(payload, lifetime, key) {
         const now = Math.floor(Date.now() / 1000);
         // -- genero il JWT
         const token = jwt.sign({
             ...payload,
             iat: now,
             exp: now + lifetime
-        }, JWT.keys[key]);
+        }, key);
         // -- restituisco il token
         return token;
     }
     /**
      * Verifica un JWT
-     * @param token 
-     * @param key 
+     * @param {string} token 
+     * @param {Uint8Array} key 
      * @returns restituisce null se non è valido oppure il payload
      */
     static verify(token, key) {
@@ -48,9 +40,11 @@ export class JWT {
             // -- provo a verificare il jwt
             // - se invalido lancerà un errore quindi lo catturo
             // - e restituisco null
-            return jwt.verify(token, JWT.keys[key]);
+            return jwt.verify(token, key);
         } catch (error) {
             // -- il token non è valido
+            console.log(error);
+            
             return null;
         }
     }

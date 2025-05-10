@@ -91,6 +91,8 @@ export class AuthController {
         this.service.signout(req.user.kid);
         // ---
         res.clearCookie('jwt');
+        res.clearCookie('uid');
+        res.clearCookie('cke');
         // ---
         res.status(201).json({ message: 'Bye' });
     });

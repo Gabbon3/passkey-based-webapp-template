@@ -4,13 +4,12 @@ import { CError } from "../helpers/cError.js";
 import { User } from "../models/user.model.js";
 import { AuthKeys } from "../models/authKeys.model.js";
 import { Roles } from "../config/roles.js";
-import { Mailer } from "../lib/mailer.js";
-import automatedEmails from "../config/automatedMails.js";
 import { PULSE } from "../protocols/PULSE.node.js";
-import { Bytes } from "../utils/bytes.util.js";
-import { RamDB } from "../utils/ramdb.js";
 
 export class AuthService {
+    constructor() {
+        this.pulse = new PULSE();
+    }
     /**
      * Registra un utente sul db
      * @param {string} email
@@ -74,23 +73,16 @@ export class AuthService {
                 "Email is not verified",
                 401
             );
+        /**
+         * Stabilisco la sessione con PULSE
+         */
+        const { jwt, publicKey } = await this.pulse.generateSession({
+            publicKeyHex,
+            userId: user.id,
+            payload: { uid: user.id, role: Roles.BASE },
+        });
         // ---
-        const { kid, keyPair, sharedSecret } =
-            await PULSE.calculateSharedSecret(publicKeyHex);
-        /**
-         * Genero l'access token
-         */
-        const jwt = JWT.create({ uid: user.id, role: Roles.BASE, kid }, PULSE.jwtLifetime);
-        /**
-         * Salvo su auth keys
-         */
-        await PULSE.saveAuthKey(kid, sharedSecret, user.id);
-        /**
-         * restituisco quindi:
-         *  - l'access token
-         *  - la chiave pubblica del server
-         */
-        return { uid: user.id, jwt, publicKey: keyPair.public_key.toString("hex") };
+        return { uid: user.id, jwt, publicKey };
     }
 
     /**
@@ -98,7 +90,7 @@ export class AuthService {
      * @param {string} guid
      */
     async signout(guid) {
-        const kid = await PULSE.calculateKid(guid);
+        const kid = await this.pulse.calculateKid(guid);
         // ---
         return await AuthKeys.destroy({
             where: {

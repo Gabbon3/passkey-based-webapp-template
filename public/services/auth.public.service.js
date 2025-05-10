@@ -79,7 +79,6 @@ export class AuthService {
         // -- ottengo il segreto condiviso e lo cifro in localstorage con CKE
         const sharedSecret = await PULSE.completeHandshake(serverPublicKey);
         if (!sharedSecret) return false;
-        SessionStorage.set('shared-secret', sharedSecret);
         /**
          * Inizializzo CKE localmente
          */
@@ -117,7 +116,6 @@ export class AuthService {
             // -- ottengo il segreto condiviso e lo cifro in localstorage con CKE
             const sharedSecret = await PULSE.completeHandshake(serverPublicKey);
             if (!sharedSecret) return false;
-            SessionStorage.set('shared-secret', sharedSecret);
             /**
              * Inizializzo CKE localmente
              */

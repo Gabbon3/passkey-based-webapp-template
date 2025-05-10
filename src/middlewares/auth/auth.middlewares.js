@@ -24,26 +24,22 @@ export const verifyAuth = (
         checkIntegrity = true,
     } = options;
     return async (req, res, next) => {
-        const accessToken = req.cookies.jwt;
+        const jwt = req.cookies.jwt;
         // -- verifico che esista
-        if (!accessToken) {
-            return res.status(401).json({ error: "Access denied" });
-        }
+        if (!jwt) return res.status(401).json({ error: "Access denied" });
+        // ---
+        const pulse = new PULSE();
+        const jwtSignKey = await pulse.getJWTSignKey(jwt);
+        if (!jwtSignKey) return res.status(401).json({ error: "Access denied" });
         // -- verifico che l'access token sia valido
-        const payload = JWT.verify(accessToken, 'default');
-        if (!payload) {
-            return res.status(401).json({ error: "Access denied" });
-        }
+        const payload = JWT.verify(jwt, jwtSignKey);
+        if (!payload) return res.status(401).json({ error: "Access denied" });
         // -- se è tutto ok aggiungo il payload dell'utente alla request
         req.user = payload;
         // -- verifica se il payload è conforme
-        if (!req.user.uid) {
-            return res.status(400).json({ error: "Sign-in again" });
-        }
+        if (!req.user.uid) return res.status(400).json({ error: "Sign-in again" });
         // -- verifica del ruolo
-        if (req.user.role < requiredRole) {
-            return res.status(403).json({ error: "Insufficient privileges" });
-        }
+        if (req.user.role < requiredRole) return res.status(403).json({ error: "Insufficient privileges" });
         /**
          * Verifico l'integrità della richiesta
          */
@@ -52,7 +48,7 @@ export const verifyAuth = (
             if (!integrity) return res.status(403).json({ error: "Integrity not found" });
             // -- verifico l'integrity
             const { kid } = payload;
-            const verified = await PULSE.verifyIntegrity(kid, integrity);
+            const verified = await pulse.verifyIntegrity(kid, integrity);
             // ---
             if (verified === -1) return res.status(404).json({ error: "Secret not found" });
             if (!verified) return res.status(403).json({ error: "Integrity failed" });
