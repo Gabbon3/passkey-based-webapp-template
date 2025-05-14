@@ -7,10 +7,12 @@ import { Mailer } from "../lib/mailer.js";
 import { Validator } from "../utils/validator.util.js";
 import automatedEmails from "../config/automatedMails.js";
 import { PULSE } from "../protocols/PULSE.node.js";
+import { PulseService } from "../services/pulse.service.js";
 
 export class AuthController {
     constructor() {
         this.service = new AuthService();
+        this.pulseService = new PulseService();
     }
     /**
      * Registra utente
@@ -47,17 +49,16 @@ export class AuthController {
         }
         // -- verifico se l'utente è già autenticato
         if (req.cookies.jwt) {
-            throw new CError(
-                "AlreadyLoggedIn",
-                "Please logout first",
-                409
-            );
+            // -- se si elimino dal db
+            const kid = this.pulseService.pulse.getKidFromJWT(req.cookies.jwt);
+            if (kid) await this.pulseService.delete({ kid }, true);
         }
         /**
          * Servizio
          */
         const { uid, jwt, publicKey: serverPublicKey } =
             await this.service.signin({
+                request: req,
                 email,
                 publicKeyHex
             });
@@ -81,6 +82,7 @@ export class AuthController {
         // ---
         res.status(201).json({ jwt, publicKey: serverPublicKey });
     });
+
     /**
      * Effettua la disconnessione:
      * - elimina il cookie

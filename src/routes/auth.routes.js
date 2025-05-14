@@ -1,7 +1,7 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
 import { AuthController } from "../controllers/auth.controller.js";
-import { verifyAuth, verifyEmailCode } from "../middlewares/auth/auth.middlewares.js";
+import { verifyAuth, verifyEmailCode, verifyPulsePrivilegedToken } from "../middlewares/auth/auth.middlewares.js";
 import { verifyPasskey } from "../middlewares/auth/passkey.middleware.js";
 import { emailRateLimiter } from "../middlewares/rateLimiter.middlewares.js";
 // -- router
@@ -25,12 +25,14 @@ router.post('/signin-e', emailRateLimiter, verifyEmailCode, controller.signin);
 // sign in con passkey
 router.post('/signin-p', verifyPasskey(), controller.signin);
 router.post('/signout', verifyAuth({ checkIntegrity: false }), controller.signout);
+
+// EMAIL OTP
+router.post('/otp', controller.sendEmailOTP);
+
+// API DI TEST
 // test per vedere se l'access token va
 router.post('/test', verifyAuth(), (req, res, next) => {
     res.status(200).json({ message: "Lesgo" });
 });
-
-// EMAIL OTP
-router.post('/otp', controller.sendEmailOTP);
 
 export default router;

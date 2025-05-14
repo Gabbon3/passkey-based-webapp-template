@@ -1,62 +1,99 @@
 import { Roles } from "../../config/roles.js";
 import { JWT } from "../../utils/jwt.util.js";
-import { asyncHandler } from '../asyncHandler.middleware.js';
-import { RamDB } from '../../utils/ramdb.js';
-import { CError } from '../../helpers/cError.js';
-import { Mailer } from '../../lib/mailer.js';
-import { Cripto } from '../../utils/cripto.util.js';
+import { asyncHandler } from "../asyncHandler.middleware.js";
+import { RamDB } from "../../utils/ramdb.js";
+import { CError } from "../../helpers/cError.js";
+import { Mailer } from "../../lib/mailer.js";
+import { Cripto } from "../../utils/cripto.util.js";
 import { PULSE } from "../../protocols/PULSE.node.js";
 
 /**
  * Middleware di autenticazione e autorizzazione basato su JWT e controllo d'integrità opzionale.
- *
+ * => req.user = payload { uid, role, kid }
  * @function verifyAccessToken
  * @param {Object} [options={}] - Opzioni per configurare il middleware.
  * @param {number} [options.requiredRole=Roles.BASE] - Ruolo minimo richiesto per accedere alla rotta.
  * @param {boolean} [options.checkIntegrity=true] - Se true, abilita la verifica dell'integrità tramite header 'X-Integrity'.
  * @returns {Function} Express middleware async che valida l'access token e opzionalmente verifica l'integrità.
  */
-export const verifyAuth = (
-    options = {}
-) => {
-    const {
-        requiredRole = Roles.BASE,
-        checkIntegrity = true,
-    } = options;
+export const verifyAuth = (options = {}) => {
+    const { requiredRole = Roles.BASE, checkIntegrity = true } = options;
     return async (req, res, next) => {
         const jwt = req.cookies.jwt;
         // -- verifico che esista
         if (!jwt) return res.status(401).json({ error: "Access denied" });
         // ---
         const pulse = new PULSE();
-        const jwtSignKey = await pulse.getJWTSignKey(jwt);
-        if (!jwtSignKey) return res.status(401).json({ error: "Access denied" });
+        // -- ottengo il kid
+        const kid = pulse.getKidFromJWT(jwt);
+        // ---
+        const jwtSignKey = await pulse.getSignKey(kid, 'jwt-signing');
+        if (!jwtSignKey)
+            return res.status(401).json({ error: "Access denied" });
         // -- verifico che l'access token sia valido
         const payload = JWT.verify(jwt, jwtSignKey);
         if (!payload) return res.status(401).json({ error: "Access denied" });
         // -- se è tutto ok aggiungo il payload dell'utente alla request
         req.user = payload;
         // -- verifica se il payload è conforme
-        if (!req.user.uid) return res.status(400).json({ error: "Sign-in again" });
+        if (!req.user.uid)
+            return res.status(400).json({ error: "Sign-in again" });
         // -- verifica del ruolo
-        if (req.user.role < requiredRole) return res.status(403).json({ error: "Insufficient privileges" });
+        if (req.user.role < requiredRole)
+            return res.status(403).json({ error: "Insufficient privileges" });
         /**
          * Verifico l'integrità della richiesta
          */
         if (checkIntegrity) {
-            const integrity = req.get('X-Integrity');
-            if (!integrity) return res.status(403).json({ error: "Integrity not found" });
+            const integrity = req.get("X-Integrity");
+            if (!integrity)
+                return res.status(403).json({ error: "Integrity not found" });
             // -- verifico l'integrity
             const { kid } = payload;
             const verified = await pulse.verifyIntegrity(kid, integrity);
             // ---
-            if (verified === -1) return res.status(404).json({ error: "Secret not found" });
-            if (!verified) return res.status(403).json({ error: "Integrity failed" });
+            if (verified === -1)
+                return res.status(404).json({ error: "Secret not found" });
+            if (!verified)
+                return res.status(403).json({ error: "Integrity failed" });
         }
         // -- passo al prossimo middleware o controller
         next();
+    };
+};
+
+/**
+ * Verifica un pulse privileged token
+ * configura la proprietà req.ppt = payload del ppt
+ */
+export const verifyPulsePrivilegedToken = asyncHandler(
+    async (req, res, next) => {
+        const ppt = req.cookies.ppt;
+        const jwt = req.cookies.jwt;
+        if (!ppt || !jwt)
+            return res.status(401).json({ error: "Access denied" });
+        // ---
+        const pulse = new PULSE();
+        // -- ottengo il kid
+        let kid = null;
+        try {
+            kid = JSON.parse(atob(jwt.split(".")[1])).kid;
+        } catch (error) {
+            return res.status(401).json({ error: "Access denied" });
+        }
+        // ---
+        const pptSignKey = await pulse.getSignKey(kid, 'ppt-signing');
+        if (!pptSignKey)
+            return res.status(401).json({ error: "Access denied" });
+        // -- verifico che il ppt sia valido
+        const payload = JWT.verify(ppt, pptSignKey);
+        if (!payload) return res.status(401).json({ error: "Access denied" });
+        // -- passo le informazioni
+        req.ppt = payload;
+        // -- passo al prossimo middleware o controller
+        next();
     }
-}
+);
 
 /**
  * Verifica il codice inviato per email.
@@ -72,7 +109,11 @@ export const verifyEmailCode = asyncHandler(async (req, res, next) => {
     const [saltedHash, attempts, email] = record;
     // -- verifico il numero di tentativi
     if (attempts >= 3) {
-        await Mailer.send(email, "OTP Failed Attempt", 'Maximum attempts achieved on OTP verification via another device');
+        await Mailer.send(
+            email,
+            "OTP Failed Attempt",
+            "Maximum attempts achieved on OTP verification via another device"
+        );
         RamDB.delete(requestId);
         throw new CError("", "Maximum attempts achieved", 429);
     }

@@ -7,6 +7,7 @@ import { AES256GCM } from "../utils/aesgcm.js";
 import { AuthKeys } from "../models/authKeys.model.js";
 import { Config } from "../serverConfig.js";
 import { JWT } from "../utils/jwt.util.js";
+import { getUserAgentSummary } from "../utils/useragent.util.js";
 
 /**
  * PULSE = Persistent User Login with Symmetric Encryption
@@ -14,16 +15,20 @@ import { JWT } from "../utils/jwt.util.js";
 export class PULSE {
     static timeWindow = 120; // in secondi
     static jwtLifetime = 31 * 24 * 60 * 60; // in secondi
+    static pptLifetime = 5 * 60; // in secondi
 
     /**
      * Avvia una sessione pulse, quindi calcola il segreto condiviso e lo salva sul db, genera il jwt
      * @param {Object} [options={}] * opzioni di configurazione della sessione
+     * @param {Request} [options.request] * oggetto request utile per elaborare altre info
      * @param {string} [options.publicKeyHex] * chiave pubblica del client in formato esadecimale
      * @param {string} [options.userId] * id dell'utente
      * @param {Object} [options.payload] * il payload del jwt
      * @param {number} [options.jwtLifetime=PULSE.jwtLifetime] - tempo di vita del jwt in secondi
      */
-    async generateSession({ publicKeyHex, userId, payload, jwtLifetime = PULSE.jwtLifetime } = {}) {
+    async generateSession({ request, publicKeyHex, userId, payload, jwtLifetime = PULSE.jwtLifetime } = {}) {
+        // -- ottengo user agent
+        const userAgentSummary = getUserAgentSummary(request);
         /**
          * Calcolo il segreto condiviso
          */
@@ -31,11 +36,11 @@ export class PULSE {
         /**
          * Salvo sul db il segreto condiviso
          */
-        await this.saveSharedSecret(kid, sharedSecret, userId);
+        await this.saveSharedSecret(kid, sharedSecret, userId, userAgentSummary);
         /**
          * Genero il JWT
          */
-        const jwtSignKey = await this.calculateJWTSignKey(sharedSecret);
+        const jwtSignKey = await this.calculateSignKey(sharedSecret, 'jwt-signing');
         if (!jwtSignKey) return false;
         const jwt = JWT.create({ ...payload, kid }, jwtLifetime, jwtSignKey);
         // ---
@@ -106,32 +111,40 @@ export class PULSE {
 
     /**
      * Restituisce la chiave di firma del jwt
-     * @param {string} jwt 
+     * @param {string} kid 
+     * @param {string} scope 
      * @returns {Uint8Array | boolean}
      */
-    async getJWTSignKey(jwt) {
-        // -- ottengo il kid
-        let kid = null;
-        try {
-            kid = JSON.parse(atob(jwt.split('.')[1])).kid;
-        } catch (error) {
-            console.warn(error);
-            return false;
-        }
-        // ---
+    async getSignKey(kid, scope) {
         const sharedKey = await this.getSharedSecret(kid);
         if (!sharedKey) return false;
         // ---
-        return await this.calculateJWTSignKey(sharedKey);
+        return await this.calculateSignKey(sharedKey, scope);
     }
 
     /**
      * Restituisce la chiave di firma del jwt
      * @param {Uint8Array} sharedKey 
+     * @param {string} scope * lo scopo della chiave
      * @returns {Uint8Array}
      */
-    async calculateJWTSignKey(sharedKey) {
-        return await Cripto.hmac(sharedKey, Config.PULSEPEPPER)
+    async calculateSignKey(sharedKey, scope = '') {
+        return await Cripto.HKDF(sharedKey, Config.PULSEPEPPER, new TextEncoder().encode(scope));
+    }
+
+    /**
+     * Restituisce il kid dal jwt
+     * @param {string} jwt 
+     * @returns {string | null} null se non ce il kid
+     */
+    getKidFromJWT(jwt) {
+        let kid = null;
+        try {
+            kid = JSON.parse(atob(jwt.split(".")[1])).kid;
+        } catch (error) {
+            return res.status(401).json({ error: "Access denied" });
+        }
+        return kid;
     }
 
     /**
@@ -148,15 +161,17 @@ export class PULSE {
      * @param {string} guid 
      * @param {string} sharedKey 
      * @param {string} uid user id
-     * @returns 
+     * @param {string} userAgentSummary 
+     * @returns {AuthKeys}
      */
-    async saveSharedSecret(guid, sharedKey, uid) {
+    async saveSharedSecret(guid, sharedKey, uid, userAgentSummary) {
         const kid = await this.calculateKid(guid);
         // ---
         const authKey = new AuthKeys({
             kid: kid,
             secret: Bytes.hex.encode(sharedKey),
             user_id: uid,
+            device_info: userAgentSummary,
         });
         return await authKey.save();
     }

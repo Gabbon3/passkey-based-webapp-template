@@ -18,13 +18,6 @@ export class AuthService {
      */
     async signup(email, verified = false) {
         email = email.toLowerCase();
-        // -- verifico che l'indirizzo email sia valido
-        if (!this.verifyEmail(email))
-            throw new CError(
-                "InvalidEmailDomain",
-                "The email domain is not supported. Please use a well-known email provider like Gmail, iCloud, or Outlook.",
-                422
-            );
         // -- verifico che l'email sia disponibile
         const user_exist = await User.findOne({
             where: { email },
@@ -37,30 +30,13 @@ export class AuthService {
         return await user.save();
     }
     /**
-     * Utility per verificare l'email dell'utente
-     * @param {string} email
-     * @returns {boolean}
-     */
-    verifyEmail(email) {
-        const verified_domains = [
-            "gmail.com", // Google
-            "icloud.com", // Apple
-            "outlook.com", // Microsoft
-            "hotmail.com", // Microsoft (più vecchio, ma ancora usato)
-            "yahoo.com", // Yahoo
-            "live.com", // Microsoft
-            "libero.it", // Libero
-        ];
-        // ---
-        return verified_domains.includes(email.split("@")[1]);
-    }
-    /**
      *
+     * @param {Request} request
      * @param {string} email
      * @param {string} publicKeyHex - chiave pubblica ECDH del client in esadecimale
      * @returns {}
      */
-    async signin({ email, publicKeyHex }) {
+    async signin({ request, email, publicKeyHex }) {
         // -- cerco se l'utente esiste
         const user = await User.findOne({
             where: { email },
@@ -77,9 +53,10 @@ export class AuthService {
          * Stabilisco la sessione con PULSE
          */
         const { jwt, publicKey } = await this.pulse.generateSession({
+            request: request,
             publicKeyHex,
             userId: user.id,
-            payload: { uid: user.id, role: Roles.BASE },
+            payload: { uid: user.id },
         });
         // ---
         return { uid: user.id, jwt, publicKey };

@@ -21,9 +21,17 @@ export const AuthKeys = sequelize.define(
             type: DataTypes.UUID,
             allowNull: false
         },
+        device_name: {
+            type: DataTypes.STRING(20),
+            allowNull: true
+        },
+        device_info: {
+            type: DataTypes.STRING(100),
+            allowNull: false
+        },
         last_seen_at: {
             type: DataTypes.DATE,
-            allowNull: true,
+            allowNull: true
         },
         created_at: {
             type: DataTypes.DATE,
