@@ -7,7 +7,7 @@
 CKE ensures that no single surface (cookie or localStorage) holds enough information to reconstruct the encryption key. Instead, the final key is derived at runtime via HKDF, using:
 - cookieMaterial – 32 bytes of random data stored in a Secure, HttpOnly cookie
 - localMaterial – 32 bytes of random data stored in localStorage (or similar client-only storage)
-The combination of these two inputs creates a derived key that can be used to encrypt/decrypt sensitive data in the browser, such as session tokens or shared secrets (e.g., in conjunction with PULSE).
+The combination of these two inputs creates a derived key that can be used to encrypt/decrypt sensitive data in the browser, such as session tokens or shared secrets (e.g., in conjunction with SHIV).
 
 ## 📋 Usage Workflow
 1. On successful authentication:
@@ -27,7 +27,7 @@ The combination of these two inputs creates a derived key that can be used to en
 
 CKE is fully stateless:
 - The server does not store cookieMaterial, only sends it.
-- All state needed to derive the key is held betw****een client + cookie.
+- All state needed to derive the key is held between client + cookie.
 - Session persistence relies on secure cookie scope and client retention.
 
 ## 🔒 Security Advantages
@@ -37,11 +37,11 @@ CKE is fully stateless:
 - 🕵️‍♂️ Cookie theft-resistant: cookies alone reveal nothing without client-side localMaterial.
 - 🔐 No cleartext key anywhere. The derived key exists only in memory.
 
-## 🧩 Integration with PULSE
+## 🧩 Integration with SHIV
 
-When combined with PULSE:
+When combined with SHIV:
 - CKE can be used to encrypt the shared_key locally, ensuring it is only decryptable when both cookie and local material are present.
-- Adds a local security layer without modifying the core PULSE protocol.
+- Adds a local security layer without modifying the core SHIV protocol.
 - CKE remains optional and modular.
 
 ## ⚙️ Server Requirements
@@ -56,8 +56,13 @@ CKE needs only two simple endpoints:
 
 No storage or session management is needed on the server.
 
+## ❔ What if
+
+a material was deleted?
+- simple login again.
+
 ## 🧠 Summary
 
-CKE is a portable, simple, and effective way to protect browser-side storage with layered encryption logic. It works great on its own, and even better when combined with session protocols like PULSE.
+CKE is a portable, simple, and effective way to protect browser-side storage with layered encryption logic. It works great on its own, and even better when combined with session protocols like SHIV.
 
 > Protect your client. Encrypt the secret. Don't trust the environment.

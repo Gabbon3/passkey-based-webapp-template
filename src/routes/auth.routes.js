@@ -21,7 +21,8 @@ router.use(limiter);
 // -- AUTH ROUTES (USER)
 router.post('/signup', verifyEmailCode, controller.signup);
 // sign in con email
-router.post('/signin-e', emailRateLimiter, verifyEmailCode, controller.signin);
+// router.post('/signin-e', emailRateLimiter, verifyEmailCode, controller.signin);
+router.post('/signin-e', controller.signin);
 // sign in con passkey
 router.post('/signin-p', verifyPasskey(), controller.signin);
 router.post('/signout', verifyAuth({ checkIntegrity: false }), controller.signout);

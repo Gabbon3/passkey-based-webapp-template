@@ -5,7 +5,6 @@ export class Config {
     static PORT = process.env.PORT;
 
     // JWT
-    static ACCESS_TOKEN_SECRET = Buffer.from(process.env.ACCESS_TOKEN_SECRET, 'hex');
     static PASSKEY_TOKEN_SECRET = Buffer.from(process.env.PASSKEY_TOKEN_SECRET, 'hex');
 
     // Database

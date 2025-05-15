@@ -16,7 +16,7 @@ export class AuthService {
      * @param {boolean} [verified=false] se true, allora l'utente creato sarà già validato
      * @returns {User}
      */
-    async signup(email, verified = false) {
+    async signup(email, verified = true) {
         email = email.toLowerCase();
         // -- verifico che l'email sia disponibile
         const user_exist = await User.findOne({
