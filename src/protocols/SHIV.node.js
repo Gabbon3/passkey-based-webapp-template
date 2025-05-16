@@ -10,9 +10,9 @@ import { JWT } from "../utils/jwt.util.js";
 import { getUserAgentSummary } from "../utils/useragent.util.js";
 
 /**
- * PULSE = Persistent User Login with Symmetric Encryption
+ * Session Handshake w/ Integrity Verification
  */
-export class PULSE {
+export class SHIV {
     static timeWindow = 120; // in secondi
     static jwtLifetime = 31 * 24 * 60 * 60; // in secondi
     static pptLifetime = 5 * 60; // in secondi
@@ -24,9 +24,9 @@ export class PULSE {
      * @param {string} [options.publicKeyHex] * chiave pubblica del client in formato esadecimale
      * @param {string} [options.userId] * id dell'utente
      * @param {Object} [options.payload] * il payload del jwt
-     * @param {number} [options.jwtLifetime=PULSE.jwtLifetime] - tempo di vita del jwt in secondi
+     * @param {number} [options.jwtLifetime=SHIV.jwtLifetime] - tempo di vita del jwt in secondi
      */
-    async generateSession({ request, publicKeyHex, userId, payload, jwtLifetime = PULSE.jwtLifetime } = {}) {
+    async generateSession({ request, publicKeyHex, userId, payload, jwtLifetime = SHIV.jwtLifetime } = {}) {
         // -- ottengo user agent
         const userAgentSummary = getUserAgentSummary(request);
         /**
@@ -67,7 +67,7 @@ export class PULSE {
         // -- provo con la finestra corrente e quelle adiacenti (-1, 0, +1)
         const shifts = [0, -1, 1];
         for (const shift of shifts) {
-            const derivedKey = this.deriveKey(sharedKey, salt, PULSE.timeWindow, shift);
+            const derivedKey = this.deriveKey(sharedKey, salt, SHIV.timeWindow, shift);
             try {
                 AES256GCM.decrypt(encrypted, derivedKey);
                 return true;
@@ -129,7 +129,7 @@ export class PULSE {
      * @returns {Uint8Array}
      */
     async calculateSignKey(sharedKey, scope = '') {
-        return await Cripto.HKDF(sharedKey, Config.PULSEPEPPER, new TextEncoder().encode(scope));
+        return await Cripto.HKDF(sharedKey, Config.SHIVPEPPER, new TextEncoder().encode(scope));
     }
 
     /**
@@ -153,7 +153,7 @@ export class PULSE {
      * @returns {string}
      */
     async calculateKid(guid) {
-        return await Cripto.hmac(guid, Config.PULSEPEPPER, { output_encoding: 'hex' });
+        return await Cripto.hmac(guid, Config.SHIVPEPPER, { output_encoding: 'hex' });
     }
 
     /**
@@ -183,7 +183,7 @@ export class PULSE {
      * @param {number} [interval=60] intervallo di tempo in secondi, di default a 1 ora
      * @param {number} [shift=0] con 0 si intende l'intervallo corrente, con 1 il prossimo intervallo, con -1 il precedente
      */
-    deriveKey(sharedKey, salt, interval = PULSE.timeWindow, shift = 0) {
+    deriveKey(sharedKey, salt, interval = SHIV.timeWindow, shift = 0) {
         const int = Math.floor(((Date.now() / 1000) + (shift * interval)) / interval);
         const windowIndex = new TextEncoder().encode(`${int}`);
         // ---
@@ -207,7 +207,7 @@ export class PULSE {
         // -- formalizzo
         const formatted = Cripto.hash(sharedSecret);
         // -- salvo in Ram
-        RamDB.set(kid, formatted, PULSE.ramTimeout);
+        RamDB.set(kid, formatted, SHIV.ramTimeout);
         // ---
         return { kid, keyPair, sharedSecret: formatted };
     }

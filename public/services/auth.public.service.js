@@ -1,4 +1,4 @@
-import { PULSE } from "../secure/PULSE.browser.js";
+import { SHIV } from "../secure/SHIV.browser.js";
 import { API } from "../utils/api.js";
 import { CKE } from "../utils/cke.public.util.js";
 import { LocalStorage } from "../utils/local.js";
@@ -61,7 +61,7 @@ export class AuthService {
      */
     static async signin(email, request_id, code) {
         // -- genero la coppia di chiavi
-        const publicKeyHex = await PULSE.generateKeyPair();
+        const publicKeyHex = await SHIV.generateKeyPair();
         // -- invio la richiesta
         const res = await API.fetch('/api/auth/signin-e', {
             method: 'POST',
@@ -77,7 +77,7 @@ export class AuthService {
         // ---
         const { publicKey: serverPublicKey } = res;
         // -- ottengo il segreto condiviso e lo cifro in localstorage con CKE
-        const sharedSecret = await PULSE.completeHandshake(serverPublicKey);
+        const sharedSecret = await SHIV.completeHandshake(serverPublicKey);
         if (!sharedSecret) return false;
         /**
          * Inizializzo CKE localmente
@@ -100,7 +100,7 @@ export class AuthService {
      */
     static async signinWithPasskey(email) {
         // -- genero la coppia di chiavi
-        const publicKeyHex = await PULSE.generateKeyPair();
+        const publicKeyHex = await SHIV.generateKeyPair();
         // -- invio la richiesta
         return await PasskeyService.authenticate({
             endpoint: '/api/auth/signin-p',
@@ -114,7 +114,7 @@ export class AuthService {
             // ---
             const { publicKey: serverPublicKey } = res;
             // -- ottengo il segreto condiviso e lo cifro in localstorage con CKE
-            const sharedSecret = await PULSE.completeHandshake(serverPublicKey);
+            const sharedSecret = await SHIV.completeHandshake(serverPublicKey);
             if (!sharedSecret) return false;
             /**
              * Inizializzo CKE localmente

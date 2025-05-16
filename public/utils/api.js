@@ -1,6 +1,6 @@
 import { Windows } from "./windows.js";
 import { CError } from "./error.js";
-import { PULSE } from "../secure/PULSE.browser.js";
+import { SHIV } from "../secure/SHIV.browser.js";
 
 export class API {
     static recent = {};
@@ -44,7 +44,7 @@ export class API {
                     return null;
             }
             // -- aggiungo l'header integrity se presente
-            const integrity = await PULSE.getIntegrity();
+            const integrity = await SHIV.getIntegrity();
             if (integrity) {
                 options.headers['X-Integrity'] = integrity;
             }

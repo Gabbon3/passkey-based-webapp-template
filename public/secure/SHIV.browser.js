@@ -5,9 +5,9 @@ import { ECDH } from "./ecdh.js";
 import { SessionStorage } from "../utils/session.js";
 
 /**
- * PULSE = Parallel Unlinkable Long-lived Session Exchange
+ * Session Handshake w/ Integrity Verification
  */
-export class PULSE {
+export class SHIV {
     // usato per memorizzare la vecchia chiave
     static recentKey = null;
     // ---
@@ -75,7 +75,7 @@ export class PULSE {
      * @param {number} [interval=60] intervallo di tempo in secondi, di default a 1 ora
      * @param {number} [shift=0] con 0 si intende l'intervallo corrente, con 1 il prossimo intervallo, con -1 il precedente
      */
-    static async deriveKey(sharedKey, salt, interval = PULSE.timeWindow, shift = 0) {
+    static async deriveKey(sharedKey, salt, interval = SHIV.timeWindow, shift = 0) {
         const int = Math.floor(((Date.now() / 1000) + (shift * interval)) / interval);
         const windowIndex = new TextEncoder().encode(`${int}`);
         // ---

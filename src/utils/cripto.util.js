@@ -60,6 +60,7 @@ export class Cripto {
             hmac_buffer.toString(options.output_encoding) :
             new Uint8Array(hmac_buffer);
     }
+    
     /**
      * Funzione di derivazione HKDF
      * @param {BinaryLike} ikm - input key material

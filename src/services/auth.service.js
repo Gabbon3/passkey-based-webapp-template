@@ -1,14 +1,12 @@
 import { Op } from "sequelize";
-import { JWT } from "../utils/jwt.util.js";
 import { CError } from "../helpers/cError.js";
 import { User } from "../models/user.model.js";
 import { AuthKeys } from "../models/authKeys.model.js";
-import { Roles } from "../config/roles.js";
-import { PULSE } from "../protocols/PULSE.node.js";
+import { SHIV } from "../protocols/SHIV.node.js";
 
 export class AuthService {
     constructor() {
-        this.pulse = new PULSE();
+        this.shiv = new SHIV();
     }
     /**
      * Registra un utente sul db
@@ -50,9 +48,9 @@ export class AuthService {
                 401
             );
         /**
-         * Stabilisco la sessione con PULSE
+         * Stabilisco la sessione con SHIV
          */
-        const { jwt, publicKey } = await this.pulse.generateSession({
+        const { jwt, publicKey } = await this.shiv.generateSession({
             request: request,
             publicKeyHex,
             userId: user.id,
@@ -67,7 +65,7 @@ export class AuthService {
      * @param {string} guid
      */
     async signout(guid) {
-        const kid = await this.pulse.calculateKid(guid);
+        const kid = await this.shiv.calculateKid(guid);
         // ---
         return await AuthKeys.destroy({
             where: {

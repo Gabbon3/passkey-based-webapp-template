@@ -6,13 +6,13 @@ import { RamDB } from "../utils/ramdb.js";
 import { Mailer } from "../lib/mailer.js";
 import { Validator } from "../utils/validator.util.js";
 import automatedEmails from "../config/automatedMails.js";
-import { PULSE } from "../protocols/PULSE.node.js";
-import { PulseService } from "../services/pulse.service.js";
+import { SHIV } from "../protocols/SHIV.node.js";
+import { ShivService } from "../services/shiv.service.js";
 
 export class AuthController {
     constructor() {
         this.service = new AuthService();
-        this.pulseService = new PulseService();
+        this.shivService = new ShivService();
     }
     /**
      * Registra utente
@@ -50,8 +50,8 @@ export class AuthController {
         // -- verifico se l'utente è già autenticato
         if (req.cookies.jwt) {
             // -- se si elimino dal db
-            const kid = this.pulseService.pulse.getKidFromJWT(req.cookies.jwt);
-            if (kid) await this.pulseService.delete({ kid }, true);
+            const kid = this.shivService.shiv.getKidFromJWT(req.cookies.jwt);
+            if (kid) await this.shivService.delete({ kid }, true);
         }
         /**
          * Servizio
@@ -66,14 +66,14 @@ export class AuthController {
         res.cookie("jwt", jwt, {
             httpOnly: true,
             secure: true,
-            maxAge: PULSE.jwtLifetime * 1000,
+            maxAge: SHIV.jwtLifetime * 1000,
             sameSite: "Strict",
             path: "/",
         });
         res.cookie("uid", uid, {
             httpOnly: true,
             secure: true,
-            maxAge: PULSE.jwtLifetime * 1000,
+            maxAge: SHIV.jwtLifetime * 1000,
             sameSite: "Strict",
             path: "/",
         });

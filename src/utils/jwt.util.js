@@ -1,9 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { Config } from "../serverConfig.js";
 
 export class JWT {
-    // ---
-
     /**
      * Tempi di scadenza dei token in secondi
      */

@@ -1,13 +1,13 @@
 import { JWT } from "../utils/jwt.util.js";
 import { CError } from "../helpers/cError.js";
 import { AuthKeys } from "../models/authKeys.model.js";
-import { PULSE } from "../protocols/PULSE.node.js";
+import { SHIV } from "../protocols/SHIV.node.js";
 import { RamDB } from "../utils/ramdb.js";
 import { Op } from "sequelize";
 
-export class PulseService {
+export class ShivService {
     constructor() {
-        this.pulse = new PULSE();
+        this.shiv = new SHIV();
     }
 
     /**
@@ -17,10 +17,10 @@ export class PulseService {
      * @param {number} lifetime - il tempo di vita del ppt, di base 5 minuti
      * @returns {string} - un token formato da un payload che include uid utente + additional info
      */
-    async createPulsePrivilegedToken({ payload, additional, lifetime = PULSE.pptLifetime } = {}) {
+    async createShivPrivilegedToken({ payload, additional, lifetime = SHIV.pptLifetime } = {}) {
         if (!payload.uid || !payload.kid) throw new Error("Il payload non è conforme, deve avere uid e kid");
         // -- ottengo la chiave
-        const signKey = await this.pulse.getSignKey(payload.kid, 'ppt-signing');
+        const signKey = await this.shiv.getSignKey(payload.kid, 'ppt-signing');
         if (!signKey) throw new CError("", "No key founded", 400);
         // ---
         const ppt = JWT.create({ uid: payload.uid, ...additional }, lifetime, signKey);
@@ -35,7 +35,7 @@ export class PulseService {
      */
     async getAllSession(currentGuid, userId) {
         // -- calcolo il kid
-        const currentKid = await this.pulse.calculateKid(currentGuid);
+        const currentKid = await this.shiv.calculateKid(currentGuid);
         // -- ottengo tutte le sessioni
         const sessions = await AuthKeys.findAll({
             where: { user_id: userId },
@@ -61,7 +61,7 @@ export class PulseService {
      * @returns {Array} [affectedRows]
      */
     async update(conditions, newInfo, calculateKid = false) {
-        if (calculateKid && conditions.kid) conditions.kid = await this.pulse.calculateKid(conditions.kid);
+        if (calculateKid && conditions.kid) conditions.kid = await this.shiv.calculateKid(conditions.kid);
         // ---
         return await AuthKeys.update(
             newInfo,
@@ -77,7 +77,7 @@ export class PulseService {
      * @returns {number} numero di record eliminati
      */
     async delete(conditions, calculateKid = false) {
-        if (calculateKid && conditions.kid) conditions.kid = await this.pulse.calculateKid(conditions.kid);
+        if (calculateKid && conditions.kid) conditions.kid = await this.shiv.calculateKid(conditions.kid);
         // -- elimino da ram db anche
         RamDB.delete(conditions.kid);
         // ---
@@ -93,7 +93,7 @@ export class PulseService {
      */
     async deleteAll(conditions) {
         // -- se presente il guid della sessione viene calcolato il kid
-        conditions.kid = await this.pulse.calculateKid(conditions.kid);
+        conditions.kid = await this.shiv.calculateKid(conditions.kid);
         // ---
         return await AuthKeys.destroy({
             where: {

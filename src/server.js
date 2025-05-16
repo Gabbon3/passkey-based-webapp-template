@@ -7,7 +7,7 @@ import { errorHandlerMiddleware } from './middlewares/errorHandler.middleware.js
 import passkeyRoutes from './routes/passkey.routes.js';
 import staticRoutes from './routes/static.routes.js';
 import authRoutes from './routes/auth.routes.js';
-import pulseRoutes from './routes/pulse.routes.js';
+import shivRoutes from './routes/shiv.routes.js';
 import ckeRoutes from './routes/cke.routes.js';
 // ---
 import { date } from './utils/date.util.js';
@@ -27,7 +27,7 @@ app.use(cookieParser());
  * ROUTES
  */
 app.use('/api/auth', authRoutes);
-app.use('/api/pulse', pulseRoutes);
+app.use('/api/shiv', shivRoutes);
 app.use('/api/passkey', passkeyRoutes);
 app.use('/api/health', (req, res) => {
     res.status(200).json({ message: 'Im fine!' });

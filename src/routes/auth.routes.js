@@ -1,7 +1,7 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
 import { AuthController } from "../controllers/auth.controller.js";
-import { verifyAuth, verifyEmailCode, verifyPulsePrivilegedToken } from "../middlewares/auth/auth.middlewares.js";
+import { verifyAuth, verifyEmailCode, verifyShivPrivilegedToken } from "../middlewares/auth/auth.middlewares.js";
 import { verifyPasskey } from "../middlewares/auth/passkey.middleware.js";
 import { emailRateLimiter } from "../middlewares/rateLimiter.middlewares.js";
 // -- router
