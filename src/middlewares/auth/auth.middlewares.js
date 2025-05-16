@@ -6,6 +6,7 @@ import { CError } from "../../helpers/cError.js";
 import { Mailer } from "../../lib/mailer.js";
 import { Cripto } from "../../utils/cripto.util.js";
 import { SHIV } from "../../protocols/SHIV.node.js";
+import { verifyPasskey } from "./passkey.middleware.js";
 
 /**
  * Middleware di autenticazione e autorizzazione basato su JWT e controllo d'integrità opzionale.
@@ -135,3 +136,30 @@ export const verifyEmailCode = asyncHandler(async (req, res, next) => {
     // -- se il codice è valido, passo al prossimo middleware
     next();
 });
+
+const authStrategies = {
+    'psk': verifyPasskey,
+    'otp': verifyEmailCode,
+}
+
+/**
+ * Middleware per selezionare in automatico l'autenticatore da usare
+ * @param {Array} allowedMethods - array dei metodi permessi -> psk (passkey), otp, psw (password)
+ * @returns {Function}
+ */
+export const authSelector = (allowedMethods = []) => {
+    return (req, res, next) => {
+        const method = req.headers['x-authentication-method'];
+
+        if (!method || !allowedMethods.includes(method)) {
+            return res.status(400).json({ error: 'Auth method not allowed' });
+        }
+
+        const middleware = authStrategies[method];
+        if (!middleware) {
+            return res.status(400).json({ error: 'Not valid auth method' });
+        }
+
+        return middleware(req, res, next);
+    };
+};

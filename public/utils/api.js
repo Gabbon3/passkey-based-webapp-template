@@ -8,6 +8,7 @@ export class API {
      * Eseguo una richiesta fetch centralizzata con endpoint, opzioni e tipo di dato.
      * @param {string} endpoint - L'endpoint a cui fare la richiesta.
      * @param {Object} options - Le opzioni da utilizzare nella chiamata fetch.
+     * @param {string} [options.auth] - metodo di autenticazoine: psk, otp, psw
      * @param {boolean} [options.hide_log] - se true non mostra il log
      * @param {boolean} [options.loader] - se true attiva il loader e lo termina quando l'api risponde
      * @param {Object} type - Contiene i tipi di ritorno e contenuto: { return_type, content_type }. (json, form-data, bin)
@@ -21,6 +22,11 @@ export class API {
             type.return_type = type.return_type || 'json';
             const loader = options.loader === true;
             if (loader) Windows.loader(true);
+            // -- imposto il metodo di autenticazione se presente
+            if (options.auth) { 
+                options.headers['x-authentication-method'] = options.auth;
+                delete options.auth;
+            }
             // -- gestisco il corpo della richiesta in base al tipo di contenuto
             switch (type.content_type) {
                 case 'json':

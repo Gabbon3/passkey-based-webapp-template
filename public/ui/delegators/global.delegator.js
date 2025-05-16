@@ -128,7 +128,6 @@ export const GlobalDelegator = {
         const callback = btn.getAttribute('callback');
         const endpoint = btn.getAttribute('endpoint');
         const method = btn.getAttribute('method') ?? 'POST';
-        const passkey_need = btn.getAttribute('passkey-need');
         /**
          * Fase preliminare
          */
@@ -139,7 +138,7 @@ export const GlobalDelegator = {
         /**
          * Fase effettiva
          */
-        const res = await PasskeyService.authenticate({ endpoint, method, passkey_need });
+        const res = await PasskeyService.authenticate({ endpoint, method });
         if (!res) return true;
         /**
          * Fase finale
