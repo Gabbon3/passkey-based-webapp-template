@@ -24,7 +24,7 @@ export const verifyPasskey = (required = false) => {
         if (bypass_token) {
             const payload = RamDB.get(`byp-${bypass_token}`);
             if (payload) {
-                req.user = { 
+                req.payload = { 
                     uid: payload.uid,
                     email: "" // TODO: da gestire la mail
                 };
@@ -41,7 +41,7 @@ export const verifyPasskey = (required = false) => {
         if (required === false && cookie_jwt && !request_id) {
             const payload = JWT.verify(cookie_jwt, Config.PASSKEY_TOKEN_SECRET);
             if (payload) {
-                req.user = {
+                req.payload = {
                     uid: payload.uid,
                     email: "", // TODO: da gestire email
                 };
@@ -117,7 +117,7 @@ export const verifyPasskey = (required = false) => {
         RamDB.delete(`chl-${request_id}`);
 
         // -- imposto l'utente nel request
-        req.user = { uid: passkey.user_id };
+        req.payload = { uid: passkey.user_id };
         next();
     });
 };

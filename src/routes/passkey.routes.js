@@ -32,7 +32,7 @@ router.post('/rename/:id', verifyAuth(), controller.rename);
 router.delete('/:id', verifyAuth({ requiredRole: Roles.SUDO }), controller.delete);
 // -- test
 router.post('/test', verifyPasskey(true), (req, res) => {
-    res.status(200).json({ message: "Hi user " + req.user.uid });
+    res.status(200).json({ message: "Hi user " + req.payload.uid });
 });
 
 export default router;

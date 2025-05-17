@@ -10,7 +10,7 @@ import { verifyPasskey } from "./passkey.middleware.js";
 
 /**
  * Middleware di autenticazione e autorizzazione basato su JWT e controllo d'integrità opzionale.
- * => req.user = payload { uid, role, kid }
+ * => req.payload = payload { uid, role, kid }
  * @function verifyAccessToken
  * @param {Object} [options={}] - Opzioni per configurare il middleware.
  * @param {number} [options.requiredRole=Roles.BASE] - Ruolo minimo richiesto per accedere alla rotta.
@@ -35,12 +35,12 @@ export const verifyAuth = (options = {}) => {
         const payload = JWT.verify(jwt, jwtSignKey);
         if (!payload) return res.status(401).json({ error: "Access denied" });
         // -- se è tutto ok aggiungo il payload dell'utente alla request
-        req.user = payload;
+        req.payload = payload;
         // -- verifica se il payload è conforme
-        if (!req.user.uid)
+        if (!req.payload.uid)
             return res.status(400).json({ error: "Sign-in again" });
         // -- verifica del ruolo
-        if (req.user.role < requiredRole)
+        if (req.payload.role < requiredRole)
             return res.status(403).json({ error: "Insufficient privileges" });
         /**
          * Verifico l'integrità della richiesta
@@ -130,7 +130,7 @@ export const verifyEmailCode = asyncHandler(async (req, res, next) => {
         throw new CError("AuthError", "Invalid code", 403);
     }
     // memorizzo l'utente che ha fatto la richiesta
-    req.user = { email };
+    req.payload = { email };
     // -- elimino la richiesta dal db
     RamDB.delete(requestId);
     // -- se il codice è valido, passo al prossimo middleware

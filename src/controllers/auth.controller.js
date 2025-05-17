@@ -90,7 +90,7 @@ export class AuthController {
      */
     signout = asyncHandler(async (req, res) => {
         // -- elimino dal db
-        this.service.signout(req.user.kid);
+        this.service.signout(req.payload.kid);
         // ---
         res.clearCookie('jwt');
         res.clearCookie('uid');
