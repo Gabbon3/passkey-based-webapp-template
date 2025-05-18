@@ -16,6 +16,7 @@
         "express": "^5.1.0",
         "express-rate-limit": "^7.5.0",
         "fido2-lib": "^3.5.3",
+        "ioredis": "^5.6.1",
         "jsonwebtoken": "^9.0.2",
         "msgpack-lite": "^0.1.26",
         "nodemailer": "^6.10.1",

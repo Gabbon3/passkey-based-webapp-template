@@ -3,6 +3,7 @@ import { CError } from "../helpers/cError.js";
 import { User } from "../models/user.model.js";
 import { AuthKeys } from "../models/authKeys.model.js";
 import { SHIV } from "../protocols/SHIV.node.js";
+import { RedisDB } from "../lib/redisdb.js";
 
 export class AuthService {
     constructor() {
@@ -56,8 +57,13 @@ export class AuthService {
             userId: user.id,
             payload: { uid: user.id },
         });
+        /**
+         * genero un bypass token
+         */
+        const bypassToken = Cripto.bypassToken();
+        await RedisDB.set(`byp-${bypassToken}`, { uid: user.id }, 60);
         // ---
-        return { uid: user.id, jwt, publicKey };
+        return { uid: user.id, jwt, publicKey, bypassToken };
     }
 
     /**

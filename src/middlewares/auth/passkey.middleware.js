@@ -1,6 +1,6 @@
 import { asyncHandler } from "../asyncHandler.middleware.js";
 import { CError } from "../../helpers/cError.js";
-import { RamDB } from "../../utils/ramdb.js";
+import { RedisDB } from "../../lib/redisdb.js";
 import { Bytes } from "../../utils/bytes.util.js";
 import msgpack from "msgpack-lite";
 import { Passkey } from "../../models/passkey.model.js";
@@ -20,14 +20,11 @@ export const verifyPasskey = (required = false) => {
         /**
          * Verifico se ce un bypass token
          */
-        const { bypass_token } = req.body;
-        if (bypass_token) {
-            const payload = RamDB.get(`byp-${bypass_token}`);
+        const { bypassToken } = req.body;
+        if (bypassToken) {
+            const payload = await RedisDB.getdel(`byp-${bypassToken}`);
             if (payload) {
-                req.payload = { 
-                    uid: payload.uid,
-                    email: "" // TODO: da gestire la mail
-                };
+                req.payload = { uid: payload.uid };
                 return next();
             }
         }
@@ -58,7 +55,7 @@ export const verifyPasskey = (required = false) => {
         const credential = msgpack.decode(Bytes.base64.decode(auth_data));
 
         // -- recupero la challenge dal ramdb
-        const challenge = RamDB.get(`chl-${request_id}`);
+        const challenge = await RedisDB.get(`chl-${request_id}`);
         if (!challenge) throw new CError("", "Auth request expired", 400);
 
         // -- recupero la passkey
@@ -114,7 +111,7 @@ export const verifyPasskey = (required = false) => {
         });
 
         // -- rimuovo la challenge dal DB
-        RamDB.delete(`chl-${request_id}`);
+        await RedisDB.delete(`chl-${request_id}`);
 
         // -- imposto l'utente nel request
         req.payload = { uid: passkey.user_id };

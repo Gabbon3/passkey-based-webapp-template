@@ -69,12 +69,12 @@ export class Cripto {
      * @param {*} keyLen 
      * @returns {ArrayBuffer}
      */
-    static HKDF(ikm, salt, additionalInfo, keyLen = 32) {
+    static HKDF(ikm, salt, additionalInfo = null, keyLen = 32) {
         return crypto.hkdfSync(
             'sha256',
             ikm,
             salt,
-            additionalInfo,
+            additionalInfo ?? new Uint8Array([0]),
             keyLen
         );
     }

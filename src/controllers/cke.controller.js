@@ -1,5 +1,6 @@
 import { asyncHandler } from "../middlewares/asyncHandler.middleware.js";
 import { CError } from "../helpers/cError.js";
+import { Bytes } from "../utils/bytes.util.js";
 import { Cripto } from "../utils/cripto.util.js";
 
 export class CKEController {
@@ -11,29 +12,67 @@ export class CKEController {
      * @param {Response} res
      */
     set = asyncHandler(async (req, res) => {
-        const oldMaterial = req.cookies.cke;
-        const newMaterial = Cripto.random_bytes(32, 'hex');
+        const old = {
+            basic: req.cookies["cke-basic"],
+            advanced: req.cookies["cke-advanced"],
+        };
+        const newMaterialBasic = Cripto.random_bytes(32, "hex");
+        const newMaterialAdvanced = Cripto.random_bytes(32, "hex");
         // ---
-        res.cookie('cke', newMaterial, {
+        res.cookie("cke-basic", newMaterialBasic, {
             httpOnly: true,
             secure: true,
             maxAge: CKEController.cookieLifetime,
-            sameSite: 'Strict',
-            path: '/api/cke',
+            sameSite: "Strict",
+            path: "/cke/get",
         });
+        res.cookie("cke-advanced", newMaterialAdvanced, {
+            httpOnly: true,
+            secure: true,
+            maxAge: CKEController.cookieLifetime,
+            sameSite: "Strict",
+            path: "/cke/get/advanced",
+        });
+        // -- calcolo e restituisco anche il materiale avanzato
+        const key = Cripto.HKDF(
+            Bytes.hex.decode(newMaterialAdvanced),
+            Bytes.hex.decode(newMaterialBasic)
+        );
         // ---
-        res.status(201).json({ oldMaterial, material: newMaterial });
+        res.status(201).json({ old, new: { basic: newMaterialBasic, advanced: Bytes.hex.encode(key) } });
     });
     /**
      * Restituisce il materiale corrente in base64
      * @param {Request} req
      * @param {Response} res
      */
-    get = asyncHandler(async (req, res) => {
-        const material = req.cookies.cke;
+    getBasic = asyncHandler(async (req, res) => {
+        const material = req.cookies['cke-basic'];
         // --- id dell'utente
-        if (!material) throw new CError("NotFoundError", "Material not found", 404);
+        if (!material)
+            throw new CError("NotFoundError", "Material not found", 404);
         // ---
         res.status(200).json({ material });
+    });
+    /**
+     * Restituisce una chiave simmetrica derivata da materiale basic + advanced
+     * @param {Request} req
+     * @param {Response} res
+     */
+    getAdvanced = asyncHandler(async (req, res) => {
+        const materials = {
+            basic: req.cookies["cke-basic"],
+            advanced: req.cookies["cke-advanced"],
+        };
+        // --- id dell'utente
+        if (!materials.basic || !materials.advanced)
+            throw new CError("NotFoundError", "Materials not found", 404);
+        // -- converto in Uint8
+        const basicBytes = Bytes.hex.decode(materials.basic);
+        const advancedBytes = Bytes.hex.decode(materials.advanced);
+        // -- calcolo la chiave
+        const key = Cripto.HKDF(advancedBytes, basicBytes);
+        // ---
+        res.status(200).json({ key: Bytes.hex.encode(key) });
     });
 }

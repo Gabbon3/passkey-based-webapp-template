@@ -14,7 +14,7 @@ const limiter = rateLimit({
 });
 router.use(limiter);
 /**
- * /pulse/*
+ * /shiv/*
  */
 router.post('/ppt', verifyAuth(), controller.shivPrivilegedToken);
 router.get('/session', verifyAuth(), controller.getAllSession);

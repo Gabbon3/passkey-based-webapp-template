@@ -1,4 +1,4 @@
-import { RamDB } from "../utils/ramdb.js";
+import { RedisDB } from '../lib/redisdb.js';
 import { v4 as uuidv4 } from 'uuid';
 import { ECDH } from '../lib/ecdh.node.js';
 import { Bytes } from "../utils/bytes.util.js";
@@ -18,7 +18,7 @@ export class SHIV {
     static pptLifetime = 5 * 60; // in secondi
 
     /**
-     * Avvia una sessione pulse, quindi calcola il segreto condiviso e lo salva sul db, genera il jwt
+     * Avvia una sessione shiv, quindi calcola il segreto condiviso e lo salva sul db, genera il jwt
      * @param {Object} [options={}] * opzioni di configurazione della sessione
      * @param {Request} [options.request] * oggetto request utile per elaborare altre info
      * @param {string} [options.publicKeyHex] * chiave pubblica del client in formato esadecimale
@@ -87,7 +87,7 @@ export class SHIV {
         try {
             const kid = await this.calculateKid(guid);
             // -- RAM
-            const fromRam = RamDB.get(kid);
+            const fromRam = await RedisDB.get(kid);
             if (fromRam) return fromRam;
             // -- DB
             const fromDB = await AuthKeys.findByPk(kid);
@@ -97,7 +97,7 @@ export class SHIV {
                 await fromDB.save();
                 // -- salvo in ram
                 const decodedKey = Bytes.hex.decode(fromDB.secret);
-                RamDB.set(kid, decodedKey, 3600);
+                await RedisDB.set(kid, decodedKey, 3600);
                 // ---
                 return decodedKey;
             }
@@ -207,7 +207,7 @@ export class SHIV {
         // -- formalizzo
         const formatted = Cripto.hash(sharedSecret);
         // -- salvo in Ram
-        RamDB.set(kid, formatted, SHIV.ramTimeout);
+        await RedisDB.set(kid, formatted, SHIV.ramTimeout);
         // ---
         return { kid, keyPair, sharedSecret: formatted };
     }

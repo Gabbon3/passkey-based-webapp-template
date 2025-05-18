@@ -25,6 +25,11 @@ export class Config {
     // SHIV
     static SHIVPEPPER = Buffer.from(process.env.SHIVPEPPER, 'hex');
 
+    // REDIS
+    static REDIS_HOST = process.env.REDIS_HOST;
+    static REDIS_PORT = process.env.REDIS_PORT;
+    static REDIS_URL = process.env.REDIS_URL;
+
     // Dev
     static DEV = process.env.DEV === 'true';
 

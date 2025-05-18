@@ -2,7 +2,7 @@ import { asyncHandler } from "../middlewares/asyncHandler.middleware.js";
 import { CError } from "../helpers/cError.js";
 import { AuthService } from "../services/auth.service.js";
 import { Cripto } from "../utils/cripto.util.js";
-import { RamDB } from "../utils/ramdb.js";
+import { RedisDB } from "../lib/redisdb.js";
 import { Mailer } from "../lib/mailer.js";
 import { Validator } from "../utils/validator.util.js";
 import automatedEmails from "../config/automatedMails.js";
@@ -77,8 +77,8 @@ export class AuthController {
             sameSite: "Strict",
             path: "/",
         });
-        // Rate Limiter Email - rimuovo dal ramdb il controllo sui tentativi per accedere all'account
-        RamDB.delete(`login-attempts-${email}`);
+        // Rate Limiter Email - rimuovo dal redis il controllo sui tentativi per accedere all'account
+        await RedisDB.delete(`login-attempts-${email}`);
         // ---
         res.status(201).json({ jwt, publicKey: serverPublicKey });
     });
@@ -111,13 +111,13 @@ export class AuthController {
         const code = Cripto.randomOTPCode();
         const request_id = `ear-${email}`; // ear = email auth request
         // -- controllo che non sia gia stata fatta una richiesta
-        if (RamDB.get(request_id))
+        if (await RedisDB.get(request_id))
             throw new CError(
                 "RequestError",
                 "There's another active request, try again later",
                 400
             );
-        // -- salvo nel ramdb
+        // -- salvo nel redis
         const saltedHash = Cripto.salting(code);
         // memorizzo il codice hashato con salt con hmac
         const db_data = [
@@ -125,7 +125,7 @@ export class AuthController {
             0, // tentativi
             email,
         ];
-        const is_set = RamDB.set(request_id, db_data, 120);
+        const is_set = await RedisDB.set(request_id, db_data, 120);
         if (!is_set) throw new Error("Not able to generate verification code");
         // Genero e invio la mail
         const { text, html } = automatedEmails.otpCode({ email, code });

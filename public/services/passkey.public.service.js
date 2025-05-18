@@ -114,10 +114,9 @@ export class PasskeyService {
      * @param {string} [options.endpoint] qualsiasi endpoint del server
      * @param {string} [options.method] POST, GET...
      * @param {object} [options.body], dati
-     * @param {Function} callback 
      * @returns {boolean}
      */
-    static async authenticate(options, callback = null) {
+    static async authenticate(options) {
         if (!options.endpoint) return false;
         // -- verifico che il body non contenga le opzioni usate già dal service per far funzionare l'autenticazione
         if (options.body && (options.body.request_id || options.body.auth_data)) throw new Error("Invalid options properties, request_id & auth_data can't be used in this context");
@@ -162,7 +161,7 @@ export class PasskeyService {
         // - quindi elimino dal localstorage la traccia di passkey token cosi alla prossima richiesta l'utente usa la passkey
         if (!response) return false;
         // -- passo alla callback la risposta
-        return callback instanceof Function ? await callback(response) : true;
+        return response;
     }
     /**
      * Restituisce la lista delle passkeys dell'utente

@@ -75,17 +75,17 @@ export class AuthService {
         // -- verifico la risposta
         if (!res) return false;
         // ---
-        const { publicKey: serverPublicKey } = res;
+        const { publicKey: serverPublicKey, bypassToken } = res;
         // -- ottengo il segreto condiviso e lo cifro in localstorage con CKE
         const sharedSecret = await SHIV.completeHandshake(serverPublicKey);
         if (!sharedSecret) return false;
         /**
          * Inizializzo CKE localmente
          */
-        const ckeKey = await CKE.set();
-        if (!ckeKey) return false;
+        const { keyBasic, keyAdvanced } = await CKE.set(bypassToken);
+        if (!keyBasic || !keyAdvanced) return false;
         // -- cifro localmente lo shared secret con CKE
-        LocalStorage.set('shared-secret', sharedSecret, ckeKey);
+        LocalStorage.set('shared-secret', sharedSecret, keyBasic);
         /**
          * Memorizzo altre informzioni
          */

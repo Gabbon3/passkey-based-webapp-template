@@ -2,7 +2,7 @@ import { JWT } from "../utils/jwt.util.js";
 import { CError } from "../helpers/cError.js";
 import { AuthKeys } from "../models/authKeys.model.js";
 import { SHIV } from "../protocols/SHIV.node.js";
-import { RamDB } from "../utils/ramdb.js";
+import { RedisDB } from "../lib/redisdb.js";
 import { Op } from "sequelize";
 
 export class ShivService {
@@ -71,7 +71,7 @@ export class ShivService {
 
     /**
      * Effettua la cancellazione di una o più AuthKeys in base alle conditions
-     * elimina anche da RamDB
+     * elimina anche da Redis
      * @param {Object} conditions * condizioni per WHERE id = ...
      * @param {boolean} [calculateKid=false]
      * @returns {number} numero di record eliminati
@@ -79,7 +79,7 @@ export class ShivService {
     async delete(conditions, calculateKid = false) {
         if (calculateKid && conditions.kid) conditions.kid = await this.shiv.calculateKid(conditions.kid);
         // -- elimino da ram db anche
-        RamDB.delete(conditions.kid);
+        await RedisDB.delete(conditions.kid);
         // ---
         return await AuthKeys.destroy(
             { where: conditions }

@@ -3,7 +3,7 @@ import { Passkey } from "../models/passkey.model.js";
 import { User } from "../models/user.model.js";
 import { Mailer } from "../lib/mailer.js";
 import automatedEmails from "../config/automatedMails.js";
-import { RamDB } from "../utils/ramdb.js";
+import { RedisDB } from "../lib/redisdb.js";
 import { Bytes } from "../utils/bytes.util.js";
 import { Config } from "../serverConfig.js";
 // ---
@@ -59,8 +59,8 @@ export class PasskeyService {
             { type: "public-key", alg: -7 }, // ES256: ECDSA w/ SHA-256
             { type: "public-key", alg: -257 }, // RS256: RSASSA-PKCS1-v1_5 w/ SHA-256
         ];
-        // -- salvo nel RamDB
-        RamDB.set(`psk-chl-${email}`, { challenge: options.challenge, user_id: user.id }, 60);
+        // -- salvo nel Redis
+        await RedisDB.set(`psk-chl-${email}`, { challenge: options.challenge, user_id: user.id }, 60);
         // ---
         return options;
     }
@@ -70,7 +70,7 @@ export class PasskeyService {
      * @returns {boolean}
      */
     async complete_registration(credentials, email) {
-        const entry = RamDB.get(`psk-chl-${email}`);
+        const entry = await RedisDB.get(`psk-chl-${email}`);
         if (!entry) throw new CError("", "Request expired", 400);
         // -- valido i dati in ingresso
         if (!credentials?.id || !credentials?.response?.attestationObject || !credentials?.response?.clientDataJSON) {
@@ -113,7 +113,7 @@ export class PasskeyService {
         // -- invio la mail
         const { text, html } = automatedEmails.newPasskeyAdded(email);
         Mailer.send(email, "New Passkey", text, html);
-        RamDB.delete(`psk-chl-${email}`);
+        await RedisDB.delete(`psk-chl-${email}`);
         // ---
         return true;
     }
@@ -136,8 +136,8 @@ export class PasskeyService {
         // -- creo una challenge unica
         const options = await fido2.assertionOptions();
         const challenge = new Uint8Array(options.challenge);
-        // -- salvo nel RamDB
-        RamDB.set(`chl-${request_id}`, challenge, 60);
+        // -- salvo nel Redis
+        await RedisDB.set(`chl-${request_id}`, challenge, 60);
         // -- invio la challenge e la request id
         return { challenge, request_id, credentials_id };
     }

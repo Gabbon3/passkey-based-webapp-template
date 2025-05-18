@@ -2,6 +2,7 @@ import express from "express";
 import { CKEController } from "../controllers/cke.controller.js";
 import { verifyAuth } from "../middlewares/auth/auth.middlewares.js";
 import rateLimit from "express-rate-limit";
+import { verifyPasskey } from "../middlewares/passkey.middleware.js";
 // -- router
 const router = express.Router();
 // -- controller
@@ -15,7 +16,8 @@ const limiter = rateLimit({
 });
 router.use(limiter);
 // -- auth/cke
-router.post('/', verifyAuth(), controller.set);
-router.get('/', verifyAuth({ checkIntegrity: false }), controller.get);
+router.post('/set', verifyAuth(), verifyPasskey(), controller.set);
+router.get('/get/basic', verifyAuth({ checkIntegrity: false }), controller.getBasic);
+router.post('/get/advanced', verifyPasskey(), controller.getAdvanced);
 
 export default router;
