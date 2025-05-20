@@ -16,8 +16,9 @@ export class CKEController {
             basic: req.cookies["cke-basic"],
             advanced: req.cookies["cke-advanced"],
         };
-        const newMaterialBasic = Cripto.random_bytes(32, "hex");
-        const newMaterialAdvanced = Cripto.random_bytes(32, "hex");
+        const cripto = new Cripto();
+        const newMaterialBasic = cripto.randomBytes(32, "hex");
+        const newMaterialAdvanced = cripto.randomBytes(32, "hex");
         // ---
         res.cookie("cke-basic", newMaterialBasic, {
             httpOnly: true,
@@ -34,7 +35,7 @@ export class CKEController {
             path: "/cke/get/advanced",
         });
         // -- calcolo e restituisco anche il materiale avanzato
-        const key = Cripto.HKDF(
+        const key = await cripto.HKDF(
             Bytes.hex.decode(newMaterialAdvanced),
             Bytes.hex.decode(newMaterialBasic)
         );
@@ -71,7 +72,8 @@ export class CKEController {
         const basicBytes = Bytes.hex.decode(materials.basic);
         const advancedBytes = Bytes.hex.decode(materials.advanced);
         // -- calcolo la chiave
-        const key = Cripto.HKDF(advancedBytes, basicBytes);
+        const cripto = new Cripto();
+        const key = await cripto.HKDF(advancedBytes, basicBytes);
         // ---
         res.status(200).json({ key: Bytes.hex.encode(key) });
     });

@@ -67,7 +67,7 @@ export class SHIV {
         // -- provo con la finestra corrente e quelle adiacenti (-1, 0, +1)
         const shifts = [0, -1, 1];
         for (const shift of shifts) {
-            const derivedKey = this.deriveKey(sharedKey, salt, SHIV.timeWindow, shift);
+            const derivedKey = await this.deriveKey(sharedKey, salt, SHIV.timeWindow, shift);
             try {
                 AES256GCM.decrypt(encrypted, derivedKey);
                 return true;
@@ -129,7 +129,8 @@ export class SHIV {
      * @returns {Uint8Array}
      */
     async calculateSignKey(sharedKey, scope = '') {
-        return await Cripto.HKDF(sharedKey, Config.SHIVPEPPER, new TextEncoder().encode(scope));
+        const cripto = new Cripto();
+        return await cripto.HKDF(sharedKey, Config.SHIVPEPPER, new TextEncoder().encode(scope));
     }
 
     /**
@@ -153,7 +154,8 @@ export class SHIV {
      * @returns {string}
      */
     async calculateKid(guid) {
-        return await Cripto.hmac(guid, Config.SHIVPEPPER, { output_encoding: 'hex' });
+        const cripto = new Cripto();
+        return await cripto.hmac(guid, Config.SHIVPEPPER, { output_encoding: 'hex' });
     }
 
     /**
@@ -183,11 +185,12 @@ export class SHIV {
      * @param {number} [interval=60] intervallo di tempo in secondi, di default a 1 ora
      * @param {number} [shift=0] con 0 si intende l'intervallo corrente, con 1 il prossimo intervallo, con -1 il precedente
      */
-    deriveKey(sharedKey, salt, interval = SHIV.timeWindow, shift = 0) {
+    async deriveKey(sharedKey, salt, interval = SHIV.timeWindow, shift = 0) {
         const int = Math.floor(((Date.now() / 1000) + (shift * interval)) / interval);
         const windowIndex = new TextEncoder().encode(`${int}`);
         // ---
-        return Cripto.HKDF(sharedKey, salt, windowIndex);
+        const cripto = new Cripto();
+        return await cripto.HKDF(sharedKey, salt, windowIndex);
     }
 
     /**
@@ -205,7 +208,8 @@ export class SHIV {
             clientPublicKey
         );
         // -- formalizzo
-        const formatted = Cripto.hash(sharedSecret);
+        const cripto = new Cripto();
+        const formatted = await cripto.hash(sharedSecret);
         // -- salvo in Ram
         await RedisDB.set(kid, formatted, SHIV.ramTimeout);
         // ---

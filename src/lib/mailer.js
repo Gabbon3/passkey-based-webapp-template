@@ -22,15 +22,16 @@ export class Mailer {
      * @param {Uint8Array} [salt=null] se presente un salt, verrà concatenato all'email da hashare
      * @returns {string} restituisce una stringa che identifica una email pronta da usare per il mac
      */
-    static getHashEmailIdentity(email, truncate = false, salt = null) {
+    static async getHashEmailIdentity(email, truncate = false, salt = null) {
         // --
         const emailBytes = new TextEncoder().encode(email);
         // -- preparo il contenuto da hashare
         const prepare = salt instanceof Uint8Array ? Bytes.merge([emailBytes, salt], 8) : emailBytes;
         // -- effettuo l'hash
-        const hash = Cripto.hash(prepare, { algorithm: 'sha256' });
+        const cripto = new Cripto();
+        const hash = await cripto.hash(prepare, { algorithm: 'sha256' });
         // -- effettuo il troncamento se richiesto
-        const result = !truncate ? Bytes.base62.encode(hash) : Cripto.truncateBuffer(hash, 12, 'smart');
+        const result = !truncate ? Bytes.base62.encode(hash) : cripto.truncateBuffer(hash, 12, 'smart');
         // -- restituisco in base 62
         return Bytes.base62.encode(result);
     }
@@ -39,14 +40,15 @@ export class Mailer {
      * @param {string} email_
      * @returns {string}
      */
-    static messageAuthenticationCode(email_) {
-        const email = this.getHashEmailIdentity(email_, true, Config.FISH_SALT);
+    static async messageAuthenticationCode(email_) {
+        const email = await this.getHashEmailIdentity(email_, true, Config.FISH_SALT);
         let timestamp = Math.floor(Date.now() / 1000);
         // -- comprimo e riduco la dimensione dei dati
         timestamp = BaseConverter.toString(timestamp, 62);
         // ---
         const payload = `${email}.${timestamp}`;
-        const signature = Cripto.hmac(payload, Config.FISH_KEY);
+        const cripto = new Cripto();
+        const signature = await cripto.hmac(payload, Config.FISH_KEY);
         // ---
         const encoded_signature = Bytes.base62.encode(signature.subarray(0, 16), true);
         return `${payload}.${encoded_signature}`;
@@ -57,7 +59,7 @@ export class Mailer {
      * @param {string} code 
      * @returns {number} 1 codice e data validi, 2 codice valido ma scaduto, 3 codice non valido, 4 ricevente diverso da quello indicato
      */
-    static verifyMessageAuthenticationCode(email, code) {
+    static async verifyMessageAuthenticationCode(email, code) {
         const code_parts = code.split('.');
         const length = code_parts.length;
         // -- ottengo e decodifico la firma in binario (ultimo elemento)
@@ -68,9 +70,10 @@ export class Mailer {
         const payload = code_parts.slice(0, -1).join('.');
         // -- ottengo il mittente (unendo le parti del codice senza timestamp e signature) e derivo l'id dell'email fornita
         const receiver = code_parts.slice(0, -2).join('.');
-        const email_id = this.getHashEmailIdentity(email, true, Config.FISH_SALT);
+        const email_id = await this.getHashEmailIdentity(email, true, Config.FISH_SALT);
         // -- calcolo nuovamente la signature
-        const signature = Cripto.hmac(payload, Config.FISH_KEY);
+        const cripto = new Cripto();
+        const signature = await cripto.hmac(payload, Config.FISH_KEY);
         // -- verifico le condizioni
         const valid_signature = Bytes.compare(signature.subarray(0, 16), encoded_signature);
         const valid_date = Date.now() < new Date(timestamp + (24 * 60 * 60 * 1000));

@@ -108,7 +108,8 @@ export class AuthController {
         if (!email || !Validator.email(email))
             throw new CError("ValidationError", "No email provided", 422);
         // ---
-        const code = Cripto.randomOTPCode();
+        const cripto = new Cripto();
+        const code = cripto.randomOTPCode();
         const request_id = `ear-${email}`; // ear = email auth request
         // -- controllo che non sia gia stata fatta una richiesta
         if (await RedisDB.get(request_id))
@@ -118,7 +119,7 @@ export class AuthController {
                 400
             );
         // -- salvo nel redis
-        const saltedHash = Cripto.salting(code);
+        const saltedHash = cripto.salting(code);
         // memorizzo il codice hashato con salt con hmac
         const db_data = [
             saltedHash,

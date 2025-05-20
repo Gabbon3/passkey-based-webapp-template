@@ -123,7 +123,8 @@ export const verifyEmailCode = asyncHandler(async (req, res, next) => {
         throw new Error("InternalError: Invalid salted hash.");
     }
     // -- verifica il codice
-    const isValid = Cripto.verifySalting(code, saltedHash);
+    const cripto = new Cripto();
+    const isValid = await cripto.verifyHashWithSalt(code, saltedHash);
     if (!isValid) {
         // -- aumento il numero di tentativi
         await RedisDB.update(requestId, [saltedHash, attempts + 1, email]);
