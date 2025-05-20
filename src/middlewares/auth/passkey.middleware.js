@@ -31,25 +31,6 @@ export const verifyPasskey = (required = false) => {
 
         const { request_id, auth_data } = req.body;
 
-        // -- istanzio jwt per verifica e creazione
-        // DEPRECATO
-        const jsonwebtoken = new JWT();
-
-        /**
-         * VERIFICA JWT PER BYPASS SUL CONTROLLO DELLA PASSKEY
-         */
-        const cookie_jwt = req.cookies.passkey_token ?? null;
-        if (required === false && cookie_jwt && !request_id) {
-            const payload = jsonwebtoken.verify(cookie_jwt, Config.PASSKEY_TOKEN_SECRET);
-            if (payload) {
-                req.payload = {
-                    uid: payload.uid,
-                    email: "", // TODO: da gestire email
-                };
-                return next();
-            }
-        }
-
         /**
          * CONTROLLO SULLA PASSKEY
          */
@@ -99,20 +80,6 @@ export const verifyPasskey = (required = false) => {
             console.warn(error);
             throw new CError("", "Authentication failed", 401);
         }
-
-        /**
-         * Se i controlli passano, genero il JWT
-         */
-        const jwt = jsonwebtoken.create({ 
-            uid: passkey.user_id,
-        }, 2 * 60, 'passkey');
-        res.cookie('passkey_token', jwt, {
-            httpOnly: true,
-            secure: true,
-            maxAge: 2 * 60 * 1000,
-            sameSite: 'Strict',
-            path: '/',
-        });
 
         // -- rimuovo la challenge dal DB
         await RedisDB.delete(`chl-${request_id}`);
