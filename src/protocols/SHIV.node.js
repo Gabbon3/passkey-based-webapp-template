@@ -42,7 +42,8 @@ export class SHIV {
          */
         const jwtSignKey = await this.calculateSignKey(sharedSecret, 'jwt-signing');
         if (!jwtSignKey) return false;
-        const jwt = JWT.create({ ...payload, kid }, jwtLifetime, jwtSignKey);
+        const jsonwebtoken = new JWT();
+        const jwt = jsonwebtoken.create({ ...payload, kid }, jwtLifetime, jwtSignKey);
         // ---
         return {
             jwt: jwt,

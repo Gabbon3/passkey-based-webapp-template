@@ -31,12 +31,16 @@ export const verifyPasskey = (required = false) => {
 
         const { request_id, auth_data } = req.body;
 
+        // -- istanzio jwt per verifica e creazione
+        // DEPRECATO
+        const jsonwebtoken = new JWT();
+
         /**
          * VERIFICA JWT PER BYPASS SUL CONTROLLO DELLA PASSKEY
          */
         const cookie_jwt = req.cookies.passkey_token ?? null;
         if (required === false && cookie_jwt && !request_id) {
-            const payload = JWT.verify(cookie_jwt, Config.PASSKEY_TOKEN_SECRET);
+            const payload = jsonwebtoken.verify(cookie_jwt, Config.PASSKEY_TOKEN_SECRET);
             if (payload) {
                 req.payload = {
                     uid: payload.uid,
@@ -99,7 +103,7 @@ export const verifyPasskey = (required = false) => {
         /**
          * Se i controlli passano, genero il JWT
          */
-        const jwt = JWT.create({ 
+        const jwt = jsonwebtoken.create({ 
             uid: passkey.user_id,
         }, 2 * 60, 'passkey');
         res.cookie('passkey_token', jwt, {

@@ -15,7 +15,7 @@ export class JWT {
      * @param {Uint8Array} key - chiave da usare per firmare questo jwt
      * @returns il jwt in formato stringa
      */
-    static create(payload, lifetime, key) {
+    create(payload, lifetime, key) {
         const now = Math.floor(Date.now() / 1000);
         // -- genero il JWT
         const token = jwt.sign({
@@ -32,7 +32,7 @@ export class JWT {
      * @param {Uint8Array} key 
      * @returns restituisce null se non è valido oppure il payload
      */
-    static verify(token, key) {
+    verify(token, key) {
         try {
             // -- provo a verificare il jwt
             // - se invalido lancerà un errore quindi lo catturo

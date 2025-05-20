@@ -32,7 +32,8 @@ export const verifyAuth = (options = {}) => {
         if (!jwtSignKey)
             return res.status(401).json({ error: "Access denied" });
         // -- verifico che l'access token sia valido
-        const payload = JWT.verify(jwt, jwtSignKey);
+        const jsonwebtoken = new JWT();
+        const payload = jsonwebtoken.verify(jwt, jwtSignKey);
         if (!payload) return res.status(401).json({ error: "Access denied" });
         // -- se è tutto ok aggiungo il payload dell'utente alla request
         req.payload = payload;
@@ -87,7 +88,8 @@ export const verifyShivPrivilegedToken = asyncHandler(
         if (!pptSignKey)
             return res.status(401).json({ error: "Access denied" });
         // -- verifico che il ppt sia valido
-        const payload = JWT.verify(ppt, pptSignKey);
+        const jsonwebtoken = new JWT();
+        const payload = jsonwebtoken.verify(ppt, pptSignKey);
         if (!payload) return res.status(401).json({ error: "Access denied" });
         // -- passo le informazioni
         req.ppt = payload;

@@ -23,7 +23,8 @@ export class ShivService {
         const signKey = await this.shiv.getSignKey(payload.kid, 'ppt-signing');
         if (!signKey) throw new CError("", "No key founded", 400);
         // ---
-        const ppt = JWT.create({ uid: payload.uid, ...additional }, lifetime, signKey);
+        const jsonwebtoken = new JWT();
+        const ppt = jsonwebtoken.create({ uid: payload.uid, ...additional }, lifetime, signKey);
         return ppt;
     }
 
