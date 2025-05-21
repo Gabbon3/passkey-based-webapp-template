@@ -76,7 +76,7 @@ export class Cripto {
      * @param {BinaryLike} salt -
      * @param {BinaryLike} additionalInfo - informazioni aggiuntive, non piu di 1024 bytes
      * @param {*} keyLen
-     * @returns {ArrayBuffer}
+     * @returns {Uint8Array}
      */
     async HKDF(ikm, salt, additionalInfo = null, keyLen = 32) {
         return await new Promise((resolve, reject) => {
@@ -88,7 +88,7 @@ export class Cripto {
                 keyLen,
                 (err, derivedKey) => {
                     if (err) reject(err);
-                    else resolve(derivedKey);
+                    else resolve(new Uint8Array(derivedKey));
                 }
             );
         });
