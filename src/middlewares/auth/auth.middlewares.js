@@ -20,7 +20,7 @@ import { verifyPasskey } from "./passkey.middleware.js";
 export const verifyAuth = (options = {}) => {
     const { requiredRole = Roles.BASE, checkIntegrity = true } = options;
     return async (req, res, next) => {
-        const jwt = req.cookies.jwt;
+        const jwt = (cookieUtils.getCookie(req, 'jwt')) || req.headers.authorization?.split(" ")[1];
         // -- verifico che esista
         if (!jwt) return res.status(401).json({ error: "Access denied" });
         // ---
@@ -52,7 +52,7 @@ export const verifyAuth = (options = {}) => {
                 return res.status(403).json({ error: "Integrity not found" });
             // -- verifico l'integrity
             const { kid } = payload;
-            const verified = await shiv.verifyIntegrity(kid, integrity);
+            const verified = await shiv.verifyIntegrity(kid, req.body ?? {}, req.method, req.path, integrity);
             // ---
             if (verified === -1)
                 return res.status(404).json({ error: "Secret not found" });

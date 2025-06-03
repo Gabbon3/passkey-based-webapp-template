@@ -27,6 +27,11 @@ export class API {
                 options.headers['x-authentication-method'] = options.auth;
                 delete options.auth;
             }
+            // -- aggiungo l'header integrity se presente
+            const integrity = await SHIV.getIntegrity(options.body ?? {}, options.method, endpoint);
+            if (integrity) {
+                options.headers['X-Integrity'] = integrity;
+            }
             // -- gestisco il corpo della richiesta in base al tipo di contenuto
             switch (type.content_type) {
                 case 'json':
@@ -48,11 +53,6 @@ export class API {
                     // -- tipo di contenuto non gestito
                     console.warn("tipo di contenuto non gestito.");
                     return null;
-            }
-            // -- aggiungo l'header integrity se presente
-            const integrity = await SHIV.getIntegrity();
-            if (integrity) {
-                options.headers['X-Integrity'] = integrity;
             }
             // -- eseguo la chiamata fetch all'endpoint con le opzioni fornite
             const response = await fetch(endpoint, options);
