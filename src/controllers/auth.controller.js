@@ -56,7 +56,7 @@ export class AuthController {
         /**
          * Servizio
          */
-        const { uid, jwt, publicKey: serverPublicKey } =
+        const { uid, jwt, publicKey: serverPublicKey, bypassToken } =
             await this.service.signin({
                 request: req,
                 email,
@@ -80,7 +80,7 @@ export class AuthController {
         // Rate Limiter Email - rimuovo dal redis il controllo sui tentativi per accedere all'account
         await RedisDB.delete(`login-attempts-${email}`);
         // ---
-        res.status(201).json({ jwt, publicKey: serverPublicKey });
+        res.status(201).json({ jwt, publicKey: serverPublicKey, bypassToken });
     });
 
     /**

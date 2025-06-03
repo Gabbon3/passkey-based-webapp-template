@@ -20,7 +20,7 @@ import { verifyPasskey } from "./passkey.middleware.js";
 export const verifyAuth = (options = {}) => {
     const { requiredRole = Roles.BASE, checkIntegrity = true } = options;
     return async (req, res, next) => {
-        const jwt = (cookieUtils.getCookie(req, 'jwt')) || req.headers.authorization?.split(" ")[1];
+        const jwt = req.cookies.jwt || req.headers.authorization?.split(" ")[1];
         // -- verifico che esista
         if (!jwt) return res.status(401).json({ error: "Access denied" });
         // ---

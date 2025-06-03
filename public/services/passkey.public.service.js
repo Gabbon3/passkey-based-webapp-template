@@ -126,7 +126,7 @@ export class PasskeyService {
         let auth_data = null;
         let request_id = null;
         let body = options.body ?? {};
-        const bypass_token = options.body?.bypass_token ? true : false;
+        const bypassToken = options.body?.bypassToken ? true : false;
         // -- definisco dei valori predefiniti delle options
         const opt = {
             method: 'POST',
@@ -137,7 +137,7 @@ export class PasskeyService {
          * Se non si è già autenticato chiedo al client di firmare una challenge
          * oppure se è richiesta la passkey
          */
-        if (bypass_token === false) {
+        if (bypassToken === false) {
             // -- ottengo gli auth data e la request id
             auth_data = await this.getAuthData();
             if (!auth_data) return auth_data;

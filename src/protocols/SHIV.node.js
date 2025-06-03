@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ECDH } from '../lib/ecdh.node.js';
 import { Bytes } from "../utils/bytes.util.js";
 import { Cripto } from "../utils/cripto.util.js";
-import { AES256GCM } from "../utils/aesgcm.js";
+import msgpack from '../../public/utils/msgpack.min.js';
 import { AuthKeys } from "../models/authKeys.model.js";
 import { Config } from "../serverConfig.js";
 import { JWT } from "../utils/jwt.util.js";
