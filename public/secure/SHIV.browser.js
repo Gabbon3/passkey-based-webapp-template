@@ -19,20 +19,28 @@ export class SHIV {
     /**
      * Restituisce la stringa di integrità 
      * da associare alle fetch come header
+     * @param {{}} [body={}] - il body della request, in questo modo leghiamo l'integrity con il body, si possono intercettare modifiche al body
+     * @param {string} method - metodo usato per la fetch (GET, POST...)
+     * @param {string} endpoint - endpoint su cui verrà effettuata la fetch
      * @returns {string} stringa esadecimale dell'integrità
      */
-    static async getIntegrity() {
+    static async getIntegrity(body = {}, method = "", endpoint = "") {
         // -- ottengo la chiave dal session storage
         const sharedSecret = SessionStorage.get('shared-secret');
         // ---
         if (sharedSecret instanceof Uint8Array == false) return null;
         // -- genero un salt casuale
         const salt = Cripto.random_bytes(12);
+        // -- codifico le variabili del payload
+        const encodedBody = body instanceof Uint8Array ? body : msgpack.encode(body);
+        const encodedMethod = new TextEncoder().encode(method.toLowerCase());
+        const encodedEndpoint = new TextEncoder().encode(endpoint.toLowerCase());
+        // -- mergio tutto il payload
+        const payload = Bytes.merge([salt, encodedBody, encodedMethod, encodedEndpoint], 8);
         // -- ottengo la chiave nuova
         const derivedKey = await this.deriveKey(sharedSecret, salt);
-        // -- genero la challenge
-        const challenge = Cripto.random_bytes(12);
-        const encrypted = await AES256GCM.encrypt(challenge, derivedKey);
+        // -- genero la firma
+        const encrypted = await Cripto.hmac(payload, derivedKey);
         const result = Bytes.merge([salt, encrypted], 8);
         return Bytes.base64.encode(result, true);
     }
