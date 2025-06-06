@@ -12,17 +12,17 @@ export class ShivController {
      * Rilascia un Shiv Privileged Token
      */
     shivPrivilegedToken = asyncHandler(async (req, res) => {
-        const ppt = await this.service.createShivPrivilegedToken({ payload: req.payload });
+        const spt = await this.service.createShivPrivilegedToken({ payload: req.payload });
         // -- imposto il cookie
-        res.cookie("ppt", ppt, {
+        res.cookie("spt", spt, {
             httpOnly: true,
             secure: true,
-            maxAge: SHIV.pptLifetime * 1000,
-            sameSite: "Strict",
+            maxAge: SHIV.sptLifetime * 1000,
+            sameSite: "None",
             path: "/",
         });
         // ---
-        res.status(201).json({ ppt: ppt });
+        res.status(201).json({ spt: spt });
     });
 
     /**

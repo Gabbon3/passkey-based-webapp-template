@@ -17,10 +17,10 @@ export class ShivService {
      * @param {number} lifetime - il tempo di vita del ppt, di base 5 minuti
      * @returns {string} - un token formato da un payload che include uid utente + additional info
      */
-    async createShivPrivilegedToken({ payload, additional, lifetime = SHIV.pptLifetime } = {}) {
+    async createShivPrivilegedToken({ payload, additional, lifetime = SHIV.sptLifetime } = {}) {
         if (!payload.uid || !payload.kid) throw new Error("Il payload non è conforme, deve avere uid e kid");
         // -- ottengo la chiave
-        const signKey = await this.shiv.getSignKey(payload.kid, 'ppt-signing');
+        const signKey = await this.shiv.getSignKey(payload.kid, 'spt-signing');
         if (!signKey) throw new CError("", "No key founded", 400);
         // ---
         const jsonwebtoken = new JWT();

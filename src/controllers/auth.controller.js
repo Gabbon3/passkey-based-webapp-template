@@ -67,14 +67,14 @@ export class AuthController {
             httpOnly: true,
             secure: true,
             maxAge: SHIV.jwtLifetime * 1000,
-            sameSite: "Strict",
+            sameSite: "None",
             path: "/",
         });
         res.cookie("uid", uid, {
             httpOnly: true,
             secure: true,
             maxAge: SHIV.jwtLifetime * 1000,
-            sameSite: "Strict",
+            sameSite: "None",
             path: "/",
         });
         // Rate Limiter Email - rimuovo dal redis il controllo sui tentativi per accedere all'account

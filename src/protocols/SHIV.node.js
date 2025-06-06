@@ -15,7 +15,7 @@ import { getUserAgentSummary } from "../utils/useragent.util.js";
 export class SHIV {
     static timeWindow = 120; // in secondi
     static jwtLifetime = 31 * 24 * 60 * 60; // in secondi
-    static pptLifetime = 5 * 60; // in secondi
+    static sptLifetime = 5 * 60; // in secondi
 
     /**
      * Avvia una sessione shiv, quindi calcola il segreto condiviso e lo salva sul db, genera il jwt
